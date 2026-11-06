@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRBA Interações Medicamentosas | Padronização Completa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .severity-major { background: #fef2f2; border-left: 6px solid #dc2626; }
+    .severity-moderate { background: #fffbeb; border-left: 6px solid #d97706; }
+    .severity-minor { background: #eff6ff; border-left: 6px solid #2563eb; }
+    .severity-contraindicated { background: #fee2e2; border-left: 6px solid #991b1b; }
+    .drug-chip { transition: all 0.15s ease; cursor: pointer; }
+    .drug-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .selected { background: #e0f2fe !important; border-color: #0d4f8b !important; box-shadow: 0 0 0 2px #0d4f8b; }
+    .tab-active { border-bottom: 3px solid #0d4f8b; color: #0d4f8b; font-weight: 600; }
+    .mav-badge { background: #dc2626; color: white; font-size: 9px; padding: 1px 5px; border-radius: 9999px; font-weight: 700; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; font-size: 11pt; }
+      .print-only { display: block !important; }
+      .severity-major, .severity-moderate, .severity-minor, .severity-contraindicated { break-inside: avoid; border: 1px solid #ccc; margin-bottom: 12px; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+  <header class="bg-[#0d4f8b] text-white shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <i class="fas fa-pills"></i> HRBA Interações Medicamentosas
+        </h1>
+        <p class="text-sm opacity-90 mt-0.5">Padronização de Medicamentos • Traumatologia e Ortopedia • HRBA</p>
+      </div>
+      <div class="text-right text-xs md:text-sm">
+        <div class="opacity-90">Ferramenta de suporte multiprofissional</div>
+        <div class="font-medium">Baseada na Padronização Oficial do HRBA</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-amber-50 border-b border-amber-200 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 text-sm text-amber-900 flex gap-2 items-start">
+      <i class="fas fa-exclamation-triangle mt-0.5 text-amber-600 flex-shrink-0"></i>
+      <div>
+        <strong>Protótipo de suporte clínico.</strong> Não substitui julgamento clínico, Micromedex®, Drugs.com, Lexicomp ou o farmacêutico clínico. 
+        Sempre considere idade, função renal/hepática, comorbidades e procedimento cirúrgico.
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border-b sticky top-0 z-20 no-print">
+    <div class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <button onclick="showTab('checker')" id="tab-checker" class="tab-active px-4 py-3 text-sm whitespace-nowrap">
+        <i class="fas fa-search-plus mr-1"></i> Checagem de Interações
+      </button>
+      <button onclick="showTab('mav')" id="tab-mav" class="px-4 py-3 text-sm text-slate-600 hover:text-[#0d4f8b] whitespace-nowrap">
+        <i class="fas fa-exclamation-circle mr-1"></i> MAVs do HRBA
+      </button>
+      <button onclick="showTab('about')" id="tab-about" class="px-4 py-3 text-sm text-slate-600 hover:text-[#0d4f8b] whitespace-nowrap">
+        <i class="fas fa-info-circle mr-1"></i> Sobre
+      </button>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <div id="panel-checker">
+      <div class="bg-white rounded-xl shadow-sm border p-4 mb-5 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="text-sm text-slate-700">
+            <strong>Como usar:</strong> Filtre e selecione ≥ 2 medicamentos da padronização → <strong>Verificar</strong> → Analise o resultado.
+          </div>
+          <div class="flex gap-2">
+            <button onclick="clearSelection()" class="text-sm px-3 py-1.5 rounded-lg border hover:bg-slate-50"><i class="fas fa-eraser mr-1"></i> Limpar</button>
+            <button onclick="checkInteractions()" class="text-sm px-4 py-1.5 rounded-lg bg-[#0d4f8b] text-white hover:bg-[#0a3a66] font-medium shadow"><i class="fas fa-check-double mr-1"></i> Verificar Interações</button>
+            <button onclick="window.print()" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50"><i class="fas fa-print mr-1"></i> Relatório</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border p-5 mb-5 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h2 class="font-semibold text-lg text-[#0d4f8b]"><i class="fas fa-list mr-1"></i> Medicamentos da Padronização HRBA</h2>
+          <input type="text" id="filterInput" placeholder="Filtrar por nome ou classe..." class="w-full sm:w-80 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="filterDrugs()">
+        </div>
+        <div class="flex flex-wrap gap-1.5 mb-4 text-xs" id="classFilters"></div>
+        <div id="drugList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-96 overflow-y-auto p-1"></div>
+        <div class="mt-3 text-sm text-slate-600 flex flex-wrap items-center gap-2">
+          <span>Selecionados: <strong id="selectedCount" class="text-[#0d4f8b]">0</strong></span>
+          <span id="selectedNames" class="text-slate-500"></span>
+        </div>
+      </div>
+
+      <div id="resultSection" class="hidden space-y-4">
+        <div class="print-only mb-4 border-b pb-3">
+          <h1 class="text-xl font-bold text-[#0d4f8b]">Relatório de Interações Medicamentosas – HRBA</h1>
+          <p class="text-sm">Gerado em: <span id="printDate"></span></p>
+          <p class="text-sm">Medicamentos: <span id="printDrugs"></span></p>
+        </div>
+        <div class="flex items-center justify-between no-print">
+          <h2 class="font-semibold text-xl text-[#0d4f8b]"><i class="fas fa-clipboard-list mr-1"></i> Resultado da Análise</h2>
+          <button onclick="window.print()" class="text-sm px-3 py-1.5 rounded-lg bg-slate-700 text-white hover:bg-slate-800"><i class="fas fa-print mr-1"></i> Imprimir / PDF</button>
+        </div>
+        <div id="resultsContainer"></div>
+      </div>
+    </div>
+
+    <div id="panel-mav" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border p-5 mb-5">
+        <h2 class="font-semibold text-xl text-[#0d4f8b] mb-2"><i class="fas fa-exclamation-triangle text-red-600 mr-1"></i> Medicamentos de Alta Vigilância (MAVs) – HRBA</h2>
+        <p class="text-sm text-slate-600 mb-4">Lista oficial do Manual de Padronização. MPPs recebem <span class="mav-badge">ETIQUETA VERMELHA</span> no Tasy.</p>
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg text-red-700 mb-3 border-b pb-1">2.1 Sonoridade Semelhante (SS)</h3>
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead class="sticky top-0 bg-red-50"><tr class="text-left"><th class="border p-2">Medicamento</th><th class="border p-2">Pode ser confundido com</th></tr></thead>
+              <tbody id="ssTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg text-red-700 mb-3 border-b pb-1">2.2 Medicamentos Potencialmente Perigosos (MPPs)</h3>
+          <div id="mppList" class="grid md:grid-cols-2 gap-3 text-sm"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-about" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+        <h2 class="font-semibold text-xl text-[#0d4f8b]">Sobre este Protótipo</h2>
+        <p class="text-sm leading-relaxed">Ferramenta de suporte construída a partir da <strong>Padronização de Medicamentos do HRBA</strong> e da lista oficial de MAVs do hospital, com foco no Serviço de Traumatologia e Ortopedia.</p>
+        <p class="text-sm leading-relaxed">Esta versão expande a quantidade de medicamentos disponíveis, cobrindo as principais classes terapêuticas presentes no manual institucional.</p>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+          <div class="bg-slate-50 rounded-lg p-4">
+            <h4 class="font-semibold text-[#0d4f8b] mb-2">Fontes</h4>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li>Manual de Padronização de Medicamentos – HRBA</li>
+              <li>Lista de MAVs (SS e MPPs)</li>
+              <li>Drugs.com / conceitos Micromedex®</li>
+              <li>Bulas ANVISA e alertas ISMP</li>
+            </ul>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4">
+            <h4 class="font-semibold text-[#0d4f8b] mb-2">Características</h4>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li>100% estático</li>
+              <li>Gratuito e código aberto</li>
+              <li>Pode ser hospedado na intranet</li>
+              <li>Relatório para impressão</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 pt-2 border-t">Hospital Regional do Baixo Amazonas – Dr. Waldemar Penna • Santarém-PA • 2026</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6 border-t bg-white no-print">
+    <p>Protótipo • Padronização de Medicamentos HRBA • Traumatologia e Ortopedia</p>
+  </footer>
+
+<script>
+const drugs = [
+  // Analgésicos / Opioides
+  {id:"dipirona",name:"Dipirona (Novalgina)",cls:"Analgésico",mav:false},
+  {id:"paracetamol",name:"Paracetamol (Tylenol)",cls:"Analgésico",mav:false},
+  {id:"tramadol",name:"Tramadol (Tramal)",cls:"Analgésico opioide",mav:true},
+  {id:"morfina",name:"Morfina (Dimorf)",cls:"Analgésico opioide",mav:true},
+  {id:"fentanila",name:"Fentanila (Fentanest)",cls:"Analgésico opioide",mav:true},
+  {id:"codeina_paracetamol",name:"Codeína + Paracetamol (Tylex)",cls:"Analgésico opioide",mav:false},
+  {id:"petidina",name:"Petidina (Dolossal)",cls:"Analgésico opioide",mav:true},
+  {id:"metadona",name:"Metadona (Mytedon)",cls:"Analgésico opioide",mav:true},
+  {id:"alfentanila",name:"Alfentanila (Rapifen)",cls:"Analgésico opioide",mav:true},
+  {id:"remifentanila",name:"Remifentanila (Ultiva)",cls:"Analgésico opioide",mav:true},
+  {id:"sufentanila",name:"Sufentanila (Fastfen)",cls:"Analgésico opioide",mav:true},
+  // AINEs
+  {id:"cetoprofeno",name:"Cetoprofeno (Profenid)",cls:"AINE",mav:false},
+  {id:"ibuprofeno",name:"Ibuprofeno (Alivium)",cls:"AINE",mav:false},
+  {id:"tenoxicam",name:"Tenoxicam (Tilatil)",cls:"AINE",mav:false},
+  {id:"nimesulida",name:"Nimesulida (Neosulida)",cls:"AINE",mav:false},
+  {id:"aas",name:"Ácido Acetilsalicílico (AAS)",cls:"Antiagregante / AINE",mav:false},
+  // Anticoagulantes / Antiagregantes
+  {id:"enoxaparina",name:"Enoxaparina (Clexane)",cls:"Anticoagulante",mav:true},
+  {id:"heparina",name:"Heparina (Hepamax)",cls:"Anticoagulante",mav:true},
+  {id:"rivaroxabana",name:"Rivaroxabana (Xarelto)",cls:"Anticoagulante",mav:true},
+  {id:"varfarina",name:"Varfarina (Marevan)",cls:"Anticoagulante",mav:true},
+  {id:"clopidogrel",name:"Clopidogrel (Plavix)",cls:"Antiagregante",mav:false},
+  {id:"tirofibana",name:"Tirofibana (Agrastat)",cls:"Antiagregante",mav:true},
+  // Antibióticos
+  {id:"cefazolina",name:"Cefazolina (Kefazol)",cls:"Cefalosporina",mav:false},
+  {id:"cefuroxima",name:"Cefuroxima (Zinnat)",cls:"Cefalosporina",mav:false},
+  {id:"ceftriaxona",name:"Ceftriaxona (Rocefin)",cls:"Cefalosporina",mav:false},
+  {id:"ceftazidima",name:"Ceftazidima (Kefadim)",cls:"Cefalosporina",mav:false},
+  {id:"cefepima",name:"Cefepima (Maxcef)",cls:"Cefalosporina",mav:false},
+  {id:"cefalexina",name:"Cefalexina (Keflex)",cls:"Cefalosporina",mav:false},
+  {id:"vancomicina",name:"Vancomicina (Vancocid)",cls:"Glicopeptídeo",mav:false},
+  {id:"gentamicina",name:"Gentamicina (Garamicina)",cls:"Aminoglicosídeo",mav:false},
+  {id:"amicacina",name:"Amicacina (Novamin)",cls:"Aminoglicosídeo",mav:true},
+  {id:"ciprofloxacino",name:"Ciprofloxacino (Cipro)",cls:"Quinolona",mav:false},
+  {id:"levofloxacino",name:"Levofloxacino (Tamiram)",cls:"Quinolona",mav:false},
+  {id:"clindamicina",name:"Clindamicina",cls:"Lincosamida",mav:false},
+  {id:"oxacilina",name:"Oxacilina (Staficilin)",cls:"Penicilina",mav:false},
+  {id:"ampicilina",name:"Ampicilina",cls:"Penicilina",mav:false},
+  {id:"amoxicilina",name:"Amoxicilina (Amoxil)",cls:"Penicilina",mav:false},
+  {id:"amox_clav",name:"Amoxicilina + Ác. Clavulânico (Clavulin)",cls:"Penicilina",mav:false},
+  {id:"piperacilina_tazo",name:"Piperacilina + Tazobactam (Tazocin)",cls:"Penicilina",mav:false},
+  {id:"meropenem",name:"Meropenem (Meronem)",cls:"Carbapenem",mav:false},
+  {id:"metronidazol",name:"Metronidazol (Flagyl)",cls:"Antiparasitário / Antibiótico",mav:false},
+  {id:"sulfametoxazol_trim",name:"Sulfametoxazol + Trimetoprima (Bactrim)",cls:"Sulfonamida",mav:false},
+  {id:"linezolida",name:"Linezolida (Zyvox)",cls:"Outros antimicrobianos",mav:false},
+  {id:"polimixina_b",name:"Polimixina B",cls:"Polimixina",mav:false},
+  // Antieméticos / GI
+  {id:"omeprazol",name:"Omeprazol",cls:"IBP",mav:false},
+  {id:"metoclopramida",name:"Metoclopramida (Plasil)",cls:"Antiemético",mav:false},
+  {id:"ondansetrona",name:"Ondansetrona (Zofran)",cls:"Antiemético",mav:false},
+  {id:"bromoprida",name:"Bromoprida (Digesan)",cls:"Antiemético",mav:false},
+  {id:"escopolamina",name:"Escopolamina (Buscopan)",cls:"Antiespasmódico",mav:false},
+  {id:"domperidona",name:"Domperidona (Motilium)",cls:"Antiemético",mav:false},
+  // Sedativos / Anestésicos
+  {id:"midazolam",name:"Midazolam (Dormonid)",cls:"Benzodiazepínico",mav:true},
+  {id:"diazepam",name:"Diazepam (Valium)",cls:"Benzodiazepínico",mav:false},
+  {id:"lorazepam",name:"Lorazepam (Ansirax)",cls:"Benzodiazepínico",mav:false},
+  {id:"prometazina",name:"Prometazina (Fenergan)",cls:"Antialérgico",mav:true},
+  {id:"propofol",name:"Propofol (Diprivan)",cls:"Anestésico",mav:true},
+  {id:"cetamina",name:"Dextrocetamina / Cetamina (Ketamin)",cls:"Anestésico",mav:true},
+  {id:"etomidato",name:"Etomidato (Hypnomidate)",cls:"Anestésico",mav:true},
+  {id:"lidocaina",name:"Lidocaína (Xylestesin)",cls:"Anestésico local",mav:true},
+  {id:"bupivacaina",name:"Bupivacaína + Glicose (Neocaína)",cls:"Anestésico local",mav:true},
+  {id:"levobupivacaina",name:"Levobupivacaína (Novabupi)",cls:"Anestésico local",mav:true},
+  {id:"rocuronio",name:"Rocurônio (Esmeron)",cls:"Bloqueador neuromuscular",mav:true},
+  {id:"pancuronio",name:"Pancurônio",cls:"Bloqueador neuromuscular",mav:true},
+  {id:"suxametonio",name:"Suxametônio (Succinilcolina)",cls:"Bloqueador neuromuscular",mav:true},
+  {id:"dexmedetomidina",name:"Dexmedetomidina (Precedex)",cls:"Sedativo",mav:true},
+  // Corticoides / Anti-inflamatórios
+  {id:"dexametasona",name:"Dexametasona (Decadron)",cls:"Corticosteroide",mav:false},
+  {id:"hidrocortisona",name:"Hidrocortisona",cls:"Corticosteroide",mav:true},
+  {id:"metilprednisolona",name:"Metilprednisolona (Solu-Medrol)",cls:"Corticosteroide",mav:true},
+  {id:"prednisona",name:"Prednisona (Meticorten)",cls:"Corticosteroide",mav:false},
+  {id:"prednisolona",name:"Prednisolona",cls:"Corticosteroide",mav:false},
+  // Cardiovasculares / Outros
+  {id:"furosemida",name:"Furosemida (Lasix)",cls:"Diurético",mav:false},
+  {id:"espironolactona",name:"Espironolactona",cls:"Diurético",mav:false},
+  {id:"hidroclorotiazida",name:"Hidroclorotiazida (Clorana)",cls:"Diurético",mav:false},
+  {id:"losartana",name:"Losartana (Aradois)",cls:"Anti-hipertensivo",mav:false},
+  {id:"captopril",name:"Captopril (Capoten)",cls:"Anti-hipertensivo",mav:false},
+  {id:"anlodipino",name:"Anlodipino (Norvasc)",cls:"Anti-hipertensivo",mav:false},
+  {id:"atenolol",name:"Atenolol (Atenol)",cls:"Anti-hipertensivo",mav:false},
+  {id:"metoprolol",name:"Metoprolol (Seloken)",cls:"Anti-hipertensivo",mav:true},
+  {id:"carvedilol",name:"Carvedilol (Cardilol)",cls:"Anti-hipertensivo",mav:false},
+  {id:"amiodarona",name:"Amiodarona (Ancoron)",cls:"Antiarrítmico",mav:true},
+  {id:"adenosina",name:"Adenosina (Adenocard)",cls:"Antiarrítmico",mav:true},
+  {id:"nitroglicerina",name:"Nitroglicerina (Tridil)",cls:"Antianginoso",mav:true},
+  {id:"nitroprussiato",name:"Nitroprussiato de sódio (Nipride)",cls:"Anti-hipertensivo",mav:true},
+  {id:"dobutamina",name:"Dobutamina (Dobutrex)",cls:"Amina vasoativa",mav:true},
+  {id:"dopamina",name:"Dopamina (Rivivan)",cls:"Amina vasoativa",mav:true},
+  {id:"epinefrina",name:"Epinefrina (Adrenalina)",cls:"Amina vasoativa",mav:true},
+  {id:"norepinefrina",name:"Norepinefrina (Noradrenalina)",cls:"Amina vasoativa",mav:true},
+  {id:"efedrina",name:"Efedrina",cls:"Amina vasoativa",mav:true},
+  {id:"etilefrina",name:"Etilefrina (Efortil)",cls:"Amina vasoativa",mav:true},
+  // Endocrino / Outros
+  {id:"insulina_regular",name:"Insulina Regular",cls:"Insulina",mav:true},
+  {id:"insulina_nph",name:"Insulina NPH",cls:"Insulina",mav:true},
+  {id:"metformina",name:"Metformina (Glifage)",cls:"Hipoglicemiante",mav:true},
+  {id:"glibenclamida",name:"Glibenclamida",cls:"Hipoglicemiante",mav:true},
+  {id:"glimepirida",name:"Glimepirida (Amaryl)",cls:"Hipoglicemiante",mav:true},
+  {id:"gabapentina",name:"Gabapentina (Neurontin)",cls:"Anticonvulsivante",mav:false},
+  {id:"fenitoina",name:"Fenitoína (Hidantal)",cls:"Anticonvulsivante",mav:false},
+  {id:"carbamazepina",name:"Carbamazepina (Tegretol)",cls:"Anticonvulsivante",mav:false},
+  {id:"clonazepam",name:"Clonazepam (Rivotril)",cls:"Anticonvulsivante",mav:false},
+  {id:"fenobarbital",name:"Fenobarbital",cls:"Anticonvulsivante",mav:false},
+  {id:"cloreto_potassio",name:"Cloreto de Potássio 19,1%",cls:"Eletrólito",mav:true},
+  {id:"sulfato_magnesio",name:"Sulfato de Magnésio",cls:"Eletrólito",mav:true},
+  {id:"gluconato_calcio",name:"Gluconato de Cálcio",cls:"Eletrólito",mav:false},
+  {id:"bicarbonato_sodio",name:"Bicarbonato de Sódio",cls:"Eletrólito",mav:false},
+  {id:"manitol",name:"Manitol",cls:"Diurético osmótico",mav:true},
+  {id:"naloxona",name:"Naloxona (Narcan)",cls:"Antídoto",mav:false},
+  {id:"flumazenil",name:"Flumazenil (Lanexat)",cls:"Antídoto",mav:true},
+  {id:"protamina",name:"Protamina",cls:"Antídoto",mav:true},
+  {id:"atropina",name:"Atropina",cls:"Antídoto",mav:true},
+  {id:"fitomenadiona",name:"Fitomenadiona (Vitamina K)",cls:"Antídoto / Hemostático",mav:false},
+  {id:"acido_tranexamico",name:"Ácido Tranexâmico (Transamin)",cls:"Hemostático",mav:true},
+  {id:"haloperidol",name:"Haloperidol (Haldol)",cls:"Neuroléptico",mav:true},
+  {id:"quetiapina",name:"Quetiapina (Seroquel)",cls:"Neuroléptico",mav:false},
+  {id:"risperidona",name:"Risperidona (Risperdal)",cls:"Neuroléptico",mav:false},
+  {id:"fluoxetina",name:"Fluoxetina",cls:"Antidepressivo",mav:false},
+  {id:"sertralina",name:"Sertralina",cls:"Antidepressivo",mav:false},
+  {id:"amitriptilina",name:"Amitriptilina",cls:"Antidepressivo",mav:false}
+];
+
+const interactionsDB = [
+  {pair:["enoxaparina","cetoprofeno"],severity:"major",title:"Enoxaparina + Cetoprofeno",mechanism:"Farmacodinâmico – aumento do risco de sangramento",evidence:"Boa",description:"AINEs aumentam o risco de hemorragia quando associados a HBPM.",clinicalOrtho:"Comum no pós-operatório de fraturas e artroplastias.",monitoring:"Sinais de sangramento, Hb/Ht, plaquetas, função renal.",alternatives:"Preferir dipirona ou paracetamol. Se AINE necessário: menor dose/tempo + omeprazol.",management:"Evitar. Em sangramento: suspender ambos, suporte, protamina (parcial)."},
+  {pair:["enoxaparina","ibuprofeno"],severity:"major",title:"Enoxaparina + Ibuprofeno",mechanism:"Farmacodinâmico – risco de sangramento",evidence:"Boa",description:"Ibuprofeno inibe agregação plaquetária e potencializa o anticoagulante.",clinicalOrtho:"Frequente em pacientes com fraturas.",monitoring:"Sangramento, hemograma, creatinina.",alternatives:"Dipirona, paracetamol.",management:"Preferir evitar."},
+  {pair:["enoxaparina","tenoxicam"],severity:"major",title:"Enoxaparina + Tenoxicam",mechanism:"Farmacodinâmico – risco de hemorragia",evidence:"Boa",description:"Tenoxicam tem meia-vida longa.",clinicalOrtho:"Dor inflamatória pós-traumática.",monitoring:"Sangramento, plaquetas, creatinina.",alternatives:"Dipirona + paracetamol.",management:"Evitar associação."},
+  {pair:["enoxaparina","nimesulida"],severity:"major",title:"Enoxaparina + Nimesulida",mechanism:"Farmacodinâmico + risco hepático",evidence:"Razoável a boa",description:"Aumenta risco de sangramento e tem perfil de hepatotoxicidade.",clinicalOrtho:"Preferir evitar com anticoagulante.",monitoring:"Sangramento + enzimas hepáticas.",alternatives:"Dipirona, paracetamol.",management:"Evitar."},
+  {pair:["enoxaparina","aas"],severity:"major",title:"Enoxaparina + AAS",mechanism:"Farmacodinâmico – antiagregação irreversível + anticoagulação",evidence:"Excelente",description:"AAS inibe irreversivelmente a COX-1 plaquetária.",clinicalOrtho:"Pacientes cardiopatas ou com stent.",monitoring:"Sangramento, plaquetas.",alternatives:"Manter AAS 100 mg se indicação cardiovascular forte.",management:"Avaliar risco-benefício com cardiologia."},
+  {pair:["enoxaparina","dipirona"],severity:"major",title:"Enoxaparina + Dipirona",mechanism:"Farmacodinâmico – efeito antiagregante transitório da dipirona + anticoagulação",evidence:"Boa",description:"Dipirona possui efeito inibitório transitório sobre agregação plaquetária.",clinicalOrtho:"Combinação frequente em pacientes de trauma sob profilaxia com enoxaparina.",monitoring:"Sinais de sangramento, plaquetas.",alternatives:"Dipirona ou paracetamol. Avaliar risco-benefício.",management:"Usar menor dose e menor tempo. Monitorar sangramento."},
+  {pair:["rivaroxabana","cetoprofeno"],severity:"major",title:"Rivaroxabana + Cetoprofeno",mechanism:"Farmacodinâmico – risco de sangramento",evidence:"Boa",description:"DOACs + AINEs elevam risco de hemorragia maior.",clinicalOrtho:"Profilaxia ou tratamento de TEV + dor inflamatória.",monitoring:"Sangramento, função renal.",alternatives:"Dipirona / paracetamol.",management:"Evitar."},
+  {pair:["varfarina","cetoprofeno"],severity:"major",title:"Varfarina + Cetoprofeno",mechanism:"Farmacodinâmico + possível deslocamento proteico",evidence:"Excelente",description:"AINEs potencializam o efeito da varfarina.",clinicalOrtho:"Pacientes com prótese valvar ou FA.",monitoring:"INR frequente, sinais de sangramento.",alternatives:"Dipirona, paracetamol.",management:"Evitar AINE. Monitorar INR + proteção gástrica."},
+  {pair:["enoxaparina","heparina"],severity:"contraindicated",title:"Enoxaparina + Heparina",mechanism:"Farmacodinâmico – anticoagulação excessiva",evidence:"Excelente",description:"Associação de duas heparinas aumenta drasticamente o risco de sangramento.",clinicalOrtho:"Erro de prescrição possível em transição de terapia.",monitoring:"Não se aplica – evitar.",alternatives:"Escolher apenas uma forma conforme protocolo.",management:"Nunca associar."},
+  {pair:["enoxaparina","clopidogrel"],severity:"major",title:"Enoxaparina + Clopidogrel",mechanism:"Farmacodinâmico – anticoagulação + antiagregação",evidence:"Excelente",description:"Aumenta de forma importante o risco de hemorragia maior.",clinicalOrtho:"Pacientes cardiopatas com stent que sofrem trauma.",monitoring:"Sangramento, plaquetas, hemoglobina.",alternatives:"Decisão multidisciplinar.",management:"Usar apenas se o benefício superar o risco."},
+  {pair:["tramadol","midazolam"],severity:"major",title:"Tramadol + Midazolam",mechanism:"Farmacodinâmico – depressão do SNC e respiratória aditiva + risco convulsivo",evidence:"Boa",description:"Ambos deprimem o SNC.",clinicalOrtho:"Pacientes com dor + ansiedade ou sedação pré-procedimento.",monitoring:"Nível de consciência, FR, SpO₂.",alternatives:"Analgesia multimodal. Menor dose de midazolam.",management:"Reduzir doses. Suporte, naloxona e flumazenil com cautela."},
+  {pair:["morfina","midazolam"],severity:"major",title:"Morfina + Midazolam",mechanism:"Farmacodinâmico – depressão respiratória e sedação aditiva",evidence:"Excelente",description:"Clássica interação de alto risco, especialmente em idosos.",clinicalOrtho:"Pós-operatório de grandes cirurgias ortopédicas.",monitoring:"Escala de sedação, FR, SpO₂.",alternatives:"Analgesia multimodal (dipirona + paracetamol + bloqueios).",management:"Titular doses."},
+  {pair:["fentanila","midazolam"],severity:"major",title:"Fentanila + Midazolam",mechanism:"Farmacodinâmico – depressão respiratória profunda",evidence:"Excelente",description:"Combinação usada em procedimentos, de alto risco se não monitorada.",clinicalOrtho:"Sedação para redução de fratura ou curativos.",monitoring:"Monitorização contínua obrigatória.",alternatives:"Doses mínimas. Preferir técnicas regionais.",management:"Ambiente com suporte ventilatório pronto."},
+  {pair:["tramadol","diazepam"],severity:"major",title:"Tramadol + Diazepam",mechanism:"Farmacodinâmico – depressão do SNC + risco convulsivo",evidence:"Boa",description:"Diazepam tem meia-vida longa.",clinicalOrtho:"Pacientes com dor + agitação.",monitoring:"Consciência, respiração, sinais de convulsão.",alternatives:"Evitar associação.",management:"Suspender um dos agentes se possível."},
+  {pair:["propofol","midazolam"],severity:"major",title:"Propofol + Midazolam",mechanism:"Farmacodinâmico – depressão respiratória e cardiovascular aditiva",evidence:"Excelente",description:"Ambos deprimem o SNC, a respiração e podem causar hipotensão.",clinicalOrtho:"Sedação para procedimentos ortopédicos.",monitoring:"Consciência, FR, SpO₂, PA.",alternatives:"Doses mínimas. Preferir técnicas regionais.",management:"Ambiente com suporte ventilatório e cardiovascular."},
+  {pair:["vancomicina","furosemida"],severity:"moderate",title:"Vancomicina + Furosemida",mechanism:"Farmacodinâmico – nefrotoxicidade aditiva",evidence:"Boa",description:"Ambos são potencialmente nefrotóxicos.",clinicalOrtho:"Infecção de sítio cirúrgico ou osteomielite + diurético.",monitoring:"Creatinina, TFG, níveis de vancomicina.",alternatives:"Ajustar dose de vancomicina pela função renal.",management:"Monitorar função renal diariamente."},
+  {pair:["vancomicina","gentamicina"],severity:"major",title:"Vancomicina + Gentamicina",mechanism:"Farmacodinâmico – nefrotoxicidade e ototoxicidade aditivas",evidence:"Excelente",description:"Associação aumenta significativamente o risco de LRA e toxicidade auditiva.",clinicalOrtho:"Infecções graves (osteomielite, infecção de prótese).",monitoring:"Creatinina diária, níveis séricos, audição.",alternatives:"Reavaliar necessidade de associação.",management:"Evitar associação prolongada."},
+  {pair:["furosemida","gentamicina"],severity:"major",title:"Furosemida + Gentamicina",mechanism:"Farmacodinâmico – nefrotoxicidade e ototoxicidade aditivas",evidence:"Excelente",description:"Diuréticos de alça e aminoglicosídeos potencializam toxicidade.",clinicalOrtho:"Pacientes com infecção grave e necessidade de diurético.",monitoring:"Creatinina, eletrólitos, audição.",alternatives:"Evitar associação.",management:"Monitoramento intensivo se inevitável."},
+  {pair:["ciprofloxacino","tramadol"],severity:"major",title:"Ciprofloxacino + Tramadol",mechanism:"Farmacodinâmico – redução do limiar convulsivo",evidence:"Boa",description:"Quinolonas e tramadol podem precipitar convulsões.",clinicalOrtho:"Infecções ósseas ou de partes moles + analgesia com tramadol.",monitoring:"Sinais de excitabilidade do SNC, convulsões.",alternatives:"Trocar o analgésico ou a quinolona se possível.",management:"Evitar em pacientes de risco."},
+  {pair:["dexametasona","ciprofloxacino"],severity:"moderate",title:"Dexametasona + Ciprofloxacino",mechanism:"Farmacodinâmico – aumento do risco de tendinopatia e ruptura tendínea",evidence:"Boa",description:"Corticosteroides + quinolonas elevam o risco de tendinite e ruptura.",clinicalOrtho:"Pacientes ortopédicos já têm risco elevado de problemas tendíneos.",monitoring:"Dor tendínea, edema, limitação funcional.",alternatives:"Reavaliar necessidade de um dos agentes.",management:"Evitar associação prolongada."},
+  {pair:["cetoprofeno","furosemida"],severity:"moderate",title:"Cetoprofeno + Furosemida",mechanism:"Farmacodinâmico – redução do efeito diurético e risco de LRA",evidence:"Boa",description:"AINEs reduzem prostaglandinas renais.",clinicalOrtho:"Pacientes com edema ou IC e dor inflamatória.",monitoring:"Diurese, creatinina, eletrólitos.",alternatives:"Evitar AINE; preferir dipirona/paracetamol.",management:"Monitorar função renal e resposta diurética."},
+  {pair:["cetoprofeno","dexametasona"],severity:"moderate",title:"Cetoprofeno + Dexametasona",mechanism:"Farmacodinâmico – risco aumentado de úlcera e sangramento GI",evidence:"Boa",description:"AINEs + corticosteroides elevam o risco de complicações GI.",clinicalOrtho:"Inflamação importante no pós-operatório.",monitoring:"Sintomas GI, sangramento, hemoglobina.",alternatives:"Dipirona ou paracetamol + corticoide de curta duração + IBP.",management:"Se imprescindível: menor dose, menor tempo e proteção gástrica."},
+  {pair:["tramadol","gabapentina"],severity:"moderate",title:"Tramadol + Gabapentina",mechanism:"Farmacodinâmico – depressão do SNC aditiva",evidence:"Boa",description:"Sedação, tontura e risco de queda aumentados, especialmente em idosos.",clinicalOrtho:"Analgesia multimodal para dor neuropática ou pós-operatória.",monitoring:"Nível de consciência, tontura, risco de queda, FR.",alternatives:"Titular doses. Iniciar um de cada vez.",management:"Reduzir doses iniciais em idosos."},
+  {pair:["dipirona","paracetamol"],severity:"minor",title:"Dipirona + Paracetamol",mechanism:"Farmacodinâmico – analgesia multimodal (benéfica)",evidence:"Boa",description:"Associação racional com mecanismos diferentes. Sem interação adversa significativa.",clinicalOrtho:"Base de protocolos de analgesia multimodal em ortopedia.",monitoring:"Eficácia analgésica. Dose máxima de paracetamol.",alternatives:"—",management:"Uso racional. Respeitar dose máxima de paracetamol."},
+  {pair:["dipirona","tramadol"],severity:"minor",title:"Dipirona + Tramadol",mechanism:"Farmacodinâmico – analgesia multimodal",evidence:"Boa",description:"Associação racional. Risco principal é o inerente ao tramadol.",clinicalOrtho:"Combinação frequente para dor moderada a intensa.",monitoring:"Sedação, FR, eficácia analgésica.",alternatives:"Pode-se adicionar paracetamol.",management:"Uso racional. Ajustar doses individualmente."},
+  {pair:["morfina","tramadol"],severity:"moderate",title:"Morfina + Tramadol",mechanism:"Farmacodinâmico – depressão do SNC aditiva + risco de convulsão e síndrome serotoninérgica",evidence:"Boa",description:"Dois opioides juntos aumentam sedação. Tramadol adiciona risco serotoninérgico e convulsivo.",clinicalOrtho:"Geralmente não recomendada como rotina.",monitoring:"Sedação, respiração, sinais de síndrome serotoninérgica.",alternatives:"Um opioide principal + adjuvantes não opioides.",management:"Evitar associação rotineira."},
+  {pair:["ondansetrona","tramadol"],severity:"moderate",title:"Ondansetrona + Tramadol",mechanism:"Farmacodinâmico – possível redução do efeito analgésico do tramadol",evidence:"Razoável a boa",description:"Ondansetrona pode antagonizar parte do efeito do tramadol e há preocupação teórica com síndrome serotoninérgica.",clinicalOrtho:"Associação muito comum no pós-operatório.",monitoring:"Eficácia analgésica e sinais de síndrome serotoninérgica.",alternatives:"Se analgesia insuficiente, considerar troca.",management:"Monitorar resposta."},
+  {pair:["ciprofloxacino","insulina_regular"],severity:"moderate",title:"Ciprofloxacino + Insulina",mechanism:"Farmacodinâmico – risco de disglicemia",evidence:"Boa",description:"Quinolonas estão associadas a alterações da glicemia.",clinicalOrtho:"Pacientes diabéticos com infecção de sítio cirúrgico.",monitoring:"Glicemia capilar mais frequente.",alternatives:"Considerar outro antibiótico se o risco for elevado.",management:"Ajustar insulina conforme glicemias."}
+];
+
+const ssData = [
+  {med:"Aciclovir",conf:"Ganciclovir, Valganciclovir"},
+  {med:"Amitriptilina",conf:"Aminofilina"},
+  {med:"Amoxicilina",conf:"Oxacilina, Ampicilina, Piperacilina+Tazobactam, Amoxicilina+Ác.Clavulânico"},
+  {med:"Anfotericina B",conf:"Polimixina B"},
+  {med:"Anlodipino",conf:"Nifedipina, Nimodipino"},
+  {med:"Azul de Metileno",conf:"Azul Patente, Azul de Trypano"},
+  {med:"Benzilpenicilina Benzatina",conf:"Benzilpenicilina Potássica"},
+  {med:"Cefalexina",conf:"Cefazolina"},
+  {med:"Cefepima",conf:"Cefuroxima"},
+  {med:"Cetoprofeno",conf:"Ibuprofeno, Baclofeno"},
+  {med:"Ciprofloxacino",conf:"Moxifloxacino"},
+  {med:"Dexametasona",conf:"Beclometasona"},
+  {med:"Dextrocetamina",conf:"Difenidramina, Declorfeniramina, Dexmedetomidina"},
+  {med:"Diazepam",conf:"Lorazepam, Clonazepam"},
+  {med:"Dobutamina",conf:"Dopamina, Protamina, Escopolamina"},
+  {med:"Enoxaparina",conf:"Heparina"},
+  {med:"Etilefrina",conf:"Epinefrina, Norepinefrina, Fenilefrina, Efedrina"},
+  {med:"Fentanila",conf:"Sufentanila, Alfentanila, Remifentanila"},
+  {med:"Fluconazol",conf:"Itraconazol, Cetoconazol"},
+  {med:"Gabapentina",conf:"Fluoxetina"},
+  {med:"Gentamicina",conf:"Neomicina, Claritromicina, Clindamicina, Tobramicina, Vancomicina"},
+  {med:"Hidralazina",conf:"Hidroclorotiazida"},
+  {med:"Levobupivacaína",conf:"Lidocaína, Proximetacaína"},
+  {med:"Metilprednisolona",conf:"Prednisolona, Prednisona, Hidrocortisona"},
+  {med:"Metoprolol",conf:"Propranolol, Atenolol"},
+  {med:"Nimesulida",conf:"Linezolida"},
+  {med:"Nitroglicerina",conf:"Nitroprussiato de sódio"},
+  {med:"Ondansetrona",conf:"Granisetrona"},
+  {med:"Pancurônio",conf:"Rocurônio, Suxametônio"},
+  {med:"Papaína",conf:"Papaverina"},
+  {med:"Tirofibana",conf:"Rivaroxabana"}
+];
+
+const mppData = [
+  {classe:"Agonistas adrenérgicos EV",meds:"Etilefrina, Efedrina, Epinefrina, Norepinefrina"},
+  {classe:"Analgésicos opioides",meds:"Petidina, Sufentanila, Nalbufina, Alfentanila, Remifentanila, Morfina, Fentanila, Tramadol, Metadona"},
+  {classe:"Anestésicos gerais e locais",meds:"Propofol, Isoflurano, Sevoflurano, Bupivacaína, Mepivacaína, Levobupivacaína, Lidocaína, Midazolam, Flumazenil, Cetamina, Etomidato"},
+  {classe:"Anticoagulantes",meds:"Enoxaparina, Heparina, Rivaroxabana, Varfarina"},
+  {classe:"Trombolíticos / Inibidores GP",meds:"Alteplase, Protamina, Tirofibana"},
+  {classe:"Bloqueadores neuromusculares",meds:"Pancurônio, Rocurônio, Suxametônio"},
+  {classe:"Hipoglicemiantes",meds:"Glibenclamida, Glimepirida, Metformina, Insulinas"},
+  {classe:"Sedativos EV",meds:"Midazolam, Dexmedetomidina"},
+  {classe:"Eletrólitos de alta vigilância",meds:"Cloreto de Potássio 19,1%, Cloreto de Sódio 10% e 20%, Glicose 50%, Sulfato de Magnésio"},
+  {classe:"Aminas vasoativas / Outros",meds:"Dobutamina, Dopamina, Nitroprussiato, Prometazina, Ocitocina, Nutrição Parenteral"}
+];
+
+let selected = new Set();
+let currentClassFilter = "all";
+
+function showTab(tab) {
+  ["checker","mav","about"].forEach(t => {
+    document.getElementById("panel-"+t).classList.add("hidden");
+    document.getElementById("tab-"+t).classList.remove("tab-active");
+    document.getElementById("tab-"+t).classList.add("text-slate-600");
+  });
+  document.getElementById("panel-"+tab).classList.remove("hidden");
+  document.getElementById("tab-"+tab).classList.add("tab-active");
+  document.getElementById("tab-"+tab).classList.remove("text-slate-600");
+}
+
+function getClasses() {
+  const set = new Set(drugs.map(d => d.cls));
+  return ["all", ...[...set].sort()];
+}
+
+function renderClassFilters() {
+  const container = document.getElementById("classFilters");
+  const classes = getClasses();
+  const labels = {all:"Todos", "Analgésico":"Analgésicos", "Analgésico opioide":"Opioides", "AINE":"AINEs", "Anticoagulante":"Anticoagulantes", "Cefalosporina":"Cefalosporinas", "Antiemético":"Antieméticos", "Benzodiazepínico":"Benzodiazepínicos", "Anestésico":"Anestésicos", "Anestésico local":"Anest. locais", "Corticosteroide":"Corticoides", "Diurético":"Diuréticos", "Anti-hipertensivo":"Anti-hipertensivos", "Insulina":"Insulinas", "Hipoglicemiante":"Hipoglicemiantes", "Eletrólito":"Eletrólitos", "Amina vasoativa":"Aminas vasoativas"};
+  container.innerHTML = classes.map(c => {
+    const label = labels[c] || c;
+    return `<button onclick="filterByClass('${c}')" class="px-2.5 py-1 rounded-full ${currentClassFilter===c?'bg-[#0d4f8b] text-white':'bg-slate-200 hover:bg-slate-300'} font-medium">${label}</button>`;
+  }).join("");
+}
+
+function renderDrugList(filter="") {
+  const container = document.getElementById("drugList");
+  let filtered = drugs.filter(d => {
+    const matchText = d.name.toLowerCase().includes(filter.toLowerCase()) || d.cls.toLowerCase().includes(filter.toLowerCase());
+    const matchClass = currentClassFilter === "all" || d.cls === currentClassFilter;
+    return matchText && matchClass;
+  });
+  container.innerHTML = filtered.map(d => `
+    <button onclick="toggleDrug('${d.id}')" class="drug-chip text-left text-xs p-2.5 rounded-lg border bg-white hover:bg-blue-50 ${selected.has(d.id)?'selected':'border-slate-200'}">
+      <div class="font-medium leading-tight flex items-center gap-1 flex-wrap">${d.name} ${d.mav?'<span class="mav-badge">MAV</span>':''}</div>
+      <div class="text-slate-500 mt-0.5">${d.cls}</div>
+    </button>
+  `).join("");
+}
+
+function filterByClass(cls) {
+  currentClassFilter = cls;
+  renderClassFilters();
+  renderDrugList(document.getElementById("filterInput").value);
+}
+
+function toggleDrug(id) {
+  if (selected.has(id)) selected.delete(id); else selected.add(id);
+  updateSelectedDisplay();
+  renderDrugList(document.getElementById("filterInput").value);
+}
+
+function updateSelectedDisplay() {
+  document.getElementById("selectedCount").textContent = selected.size;
+  const names = [...selected].map(id => drugs.find(d => d.id === id)?.name || id);
+  document.getElementById("selectedNames").textContent = names.length ? "→ " + names.join(" • ") : "";
+}
+
+function clearSelection() {
+  selected.clear();
+  updateSelectedDisplay();
+  renderDrugList(document.getElementById("filterInput").value);
+  document.getElementById("resultSection").classList.add("hidden");
+}
+
+function filterDrugs() { renderDrugList(document.getElementById("filterInput").value); }
+
+function getSeverityClass(sev) {
+  if (sev==="contraindicated") return "severity-contraindicated";
+  if (sev==="major") return "severity-major";
+  if (sev==="moderate") return "severity-moderate";
+  return "severity-minor";
+}
+function getSeverityLabel(sev) {
+  return {contraindicated:"CONTRAINDICADO",major:"MAIOR / GRAVE",moderate:"MODERADA",minor:"MENOR / LEVE"}[sev]||sev.toUpperCase();
+}
+
+function checkInteractions() {
+  if (selected.size < 2) { alert("Selecione pelo menos 2 medicamentos."); return; }
+  const selectedArr = [...selected].sort();
+  const found = [];
+  for (let i=0;i<selectedArr.length;i++) for (let j=i+1;j<selectedArr.length;j++) {
+    const pairKey = [selectedArr[i],selectedArr[j]].sort().join("|");
+    const match = interactionsDB.find(inter => inter.pair.slice().sort().join("|") === pairKey);
+    if (match) found.push(match);
+  }
+  const container = document.getElementById("resultsContainer");
+  const section = document.getElementById("resultSection");
+  section.classList.remove("hidden");
+  document.getElementById("printDate").textContent = new Date().toLocaleString("pt-BR");
+  document.getElementById("printDrugs").textContent = [...selected].map(id => drugs.find(d=>d.id===id)?.name).join(", ");
+
+  if (found.length === 0) {
+    container.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-5 text-green-900"><div class="flex items-start gap-3"><i class="fas fa-check-circle text-2xl text-green-600 mt-0.5"></i><div><h3 class="font-semibold text-lg">Nenhuma interação cadastrada neste protótipo entre os medicamentos selecionados</h3><p class="mt-2 text-sm">Isso <strong>não significa</strong> ausência de interações. Sempre consulte bases atualizadas ou o farmacêutico clínico do HRBA.</p></div></div></div>`;
+    return;
+  }
+  const order = {contraindicated:0,major:1,moderate:2,minor:3};
+  found.sort((a,b)=>order[a.severity]-order[b.severity]);
+  container.innerHTML = `<div class="bg-slate-50 rounded-lg p-3 text-sm mb-4 no-print"><strong>${found.length}</strong> interação(ões) encontrada(s). Ordenadas por gravidade.</div>` + found.map(inter => `
+    <div class="${getSeverityClass(inter.severity)} rounded-xl p-5 shadow-sm mb-4">
+      <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+        <h3 class="font-bold text-lg">${inter.title}</h3>
+        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${inter.severity==='contraindicated'?'bg-red-800 text-white':inter.severity==='major'?'bg-red-600 text-white':inter.severity==='moderate'?'bg-amber-500 text-white':'bg-blue-600 text-white'}">${getSeverityLabel(inter.severity)}</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div><p><strong>Mecanismo:</strong> ${inter.mechanism}</p><p class="mt-1"><strong>Grau de evidência:</strong> ${inter.evidence}</p><p class="mt-2">${inter.description}</p></div>
+        <div class="bg-white/70 rounded-lg p-3"><p class="font-semibold text-[#0d4f8b]"><i class="fas fa-bone mr-1"></i> Contexto Traumato-Ortopedia</p><p class="mt-1">${inter.clinicalOrtho}</p></div>
+      </div>
+      <div class="mt-4 grid md:grid-cols-3 gap-3 text-sm">
+        <div class="bg-white/80 rounded-lg p-3"><p class="font-semibold text-slate-700"><i class="fas fa-stethoscope mr-1"></i> Monitoramento</p><p class="mt-1">${inter.monitoring}</p></div>
+        <div class="bg-white/80 rounded-lg p-3"><p class="font-semibold text-slate-700"><i class="fas fa-exchange-alt mr-1"></i> Alternativas (HRBA)</p><p class="mt-1">${inter.alternatives}</p></div>
+        <div class="bg-white/80 rounded-lg p-3"><p class="font-semibold text-slate-700"><i class="fas fa-hand-holding-medical mr-1"></i> Manejo / Reversão</p><p class="mt-1">${inter.management}</p></div>
+      </div>
+    </div>`).join("");
+  section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function renderMAVs() {
+  document.getElementById("ssTable").innerHTML = ssData.map(row => `<tr class="hover:bg-red-50/50"><td class="border p-2 font-medium">${row.med}</td><td class="border p-2 text-slate-700">${row.conf}</td></tr>`).join("");
+  document.getElementById("mppList").innerHTML = mppData.map(item => `<div class="border border-red-200 rounded-lg p-3 bg-red-50/40"><div class="font-semibold text-red-800 text-sm">${item.classe}</div><div class="text-slate-700 mt-1 text-sm">${item.meds}</div></div>`).join("");
+}
+
+renderClassFilters();
+renderDrugList();
+renderMAVs();
+</script>
+</body>
+</html>
