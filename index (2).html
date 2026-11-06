@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRBA Interações Medicamentosas | Padronização Completa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root { --hrba-blue: #0d4f8b; --hrba-dark: #0a3a66; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .severity-major { background: #fef2f2; border-left: 6px solid #dc2626; }
+    .severity-moderate { background: #fffbeb; border-left: 6px solid #d97706; }
+    .severity-minor { background: #eff6ff; border-left: 6px solid #2563eb; }
+    .severity-contraindicated { background: #fee2e2; border-left: 6px solid #991b1b; }
+    .drug-chip { transition: all 0.15s ease; cursor: pointer; }
+    .drug-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .selected { background: #e0f2fe !important; border-color: #0d4f8b !important; box-shadow: 0 0 0 2px #0d4f8b; }
+    .tab-active { border-bottom: 3px solid #0d4f8b; color: #0d4f8b; font-weight: 600; }
+    .mav-badge { background: #dc2626; color: white; font-size: 9px; padding: 1px 5px; border-radius: 9999px; font-weight: 700; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; font-size: 11pt; }
+      .print-only { display: block !important; }
+      .severity-major, .severity-moderate, .severity-minor, .severity-contraindicated { break-inside: avoid; border: 1px solid #ccc; margin-bottom: 12px; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+  <header class="bg-[#0d4f8b] text-white shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <i class="fas fa-pills"></i> HRBA Interações Medicamentosas
+        </h1>
+        <p class="text-sm opacity-90 mt-0.5">Hospital Regional do Baixo Amazonas • Padronização de Medicamentos</p>
+      </div>
+      <div class="text-right text-xs md:text-sm">
+        <div class="opacity-90">Ferramenta de suporte multiprofissional</div>
+        <div class="font-medium">TCR – Marco Antonio da Costa Ferreira (2026)</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-amber-50 border-b border-amber-200 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 text-sm text-amber-900 flex gap-2 items-start">
+      <i class="fas fa-exclamation-triangle mt-0.5 text-amber-600 flex-shrink-0"></i>
+      <div>
+        <strong>Protótipo de suporte clínico.</strong> Não substitui julgamento clínico, Micromedex®, Drugs.com, Lexicomp ou o farmacêutico clínico. 
+        Sempre considere idade, função renal/hepática, comorbidades e procedimento cirúrgico do paciente.
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border-b sticky top-0 z-20 no-print">
+    <div class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <button onclick="showTab('checker')" id="tab-checker" class="tab-active px-4 py-3 text-sm whitespace-nowrap">
+        <i class="fas fa-search-plus mr-1"></i> Checagem de Interações
+      </button>
+      <button onclick="showTab('mav')" id="tab-mav" class="px-4 py-3 text-sm text-slate-600 hover:text-[#0d4f8b] whitespace-nowrap">
+        <i class="fas fa-exclamation-circle mr-1"></i> Medicamentos de Alta Vigilância (MAVs)
+      </button>
+      <button onclick="showTab('about')" id="tab-about" class="px-4 py-3 text-sm text-slate-600 hover:text-[#0d4f8b] whitespace-nowrap">
+        <i class="fas fa-info-circle mr-1"></i> Sobre o Projeto
+      </button>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <div id="panel-checker">
+      <div class="bg-white rounded-xl shadow-sm border p-4 mb-5 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="text-sm text-slate-700">
+            <strong>Como usar:</strong> Selecione ≥ 2 medicamentos → Clique em <strong>Verificar</strong> → Analise gravidade, contexto ortopédico, monitoramento, alternativas e manejo.
+          </div>
+          <div class="flex gap-2">
+            <button onclick="clearSelection()" class="text-sm px-3 py-1.5 rounded-lg border hover:bg-slate-50">
+              <i class="fas fa-eraser mr-1"></i> Limpar
+            </button>
+            <button onclick="checkInteractions()" class="text-sm px-4 py-1.5 rounded-lg bg-[#0d4f8b] text-white hover:bg-[#0a3a66] font-medium shadow">
+              <i class="fas fa-check-double mr-1"></i> Verificar Interações
+            </button>
+            <button onclick="window.print()" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50" title="Imprimir / Salvar PDF">
+              <i class="fas fa-print mr-1"></i> Relatório
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border p-5 mb-5 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h2 class="font-semibold text-lg text-[#0d4f8b]">
+            <i class="fas fa-list mr-1"></i> Medicamentos Padronizados HRBA (padronização completa do HRBA)
+          </h2>
+          <input type="text" id="filterInput" placeholder="Filtrar (ex: enoxaparina, tramadol, cefazolina...)" 
+                 class="w-full sm:w-72 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                 oninput="filterDrugs()">
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 mb-4 text-xs">
+          <button onclick="filterByClass('all')" class="px-2.5 py-1 rounded-full bg-slate-200 hover:bg-slate-300 font-medium">Todos</button>
+          <button onclick="filterByClass('Analgésico')" class="px-2.5 py-1 rounded-full bg-blue-100 hover:bg-blue-200">Analgésicos / Opioides</button>
+          <button onclick="filterByClass('AINE')" class="px-2.5 py-1 rounded-full bg-orange-100 hover:bg-orange-200">AINEs</button>
+          <button onclick="filterByClass('Anticoagulante')" class="px-2.5 py-1 rounded-full bg-red-100 hover:bg-red-200">Anticoagulantes</button>
+          <button onclick="filterByClass('Cefalosporina')" class="px-2.5 py-1 rounded-full bg-green-100 hover:bg-green-200">Antibióticos</button>
+          <button onclick="filterByClass('Antiemético')" class="px-2.5 py-1 rounded-full bg-purple-100 hover:bg-purple-200">Antieméticos</button>
+          <button onclick="filterByClass('Benzodiazepínico')" class="px-2.5 py-1 rounded-full bg-indigo-100 hover:bg-indigo-200">Sedativos</button>
+        </div>
+
+        <div id="drugList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-72 overflow-y-auto p-1"></div>
+
+        <div class="mt-3 text-sm text-slate-600 flex flex-wrap items-center gap-2">
+          <span>Selecionados: <strong id="selectedCount" class="text-[#0d4f8b]">0</strong></span>
+          <span id="selectedNames" class="text-slate-500"></span>
+        </div>
+      </div>
+
+      <div id="resultSection" class="hidden space-y-4">
+        <div class="print-only mb-4 border-b pb-3">
+          <h1 class="text-xl font-bold text-[#0d4f8b]">Relatório de Interações Medicamentosas – HRBA</h1>
+          <p class="text-sm">Serviço de Traumatologia e Ortopedia • Gerado em: <span id="printDate"></span></p>
+          <p class="text-sm">Medicamentos analisados: <span id="printDrugs"></span></p>
+          <p class="text-xs text-slate-500 mt-1">Protótipo de suporte clínico – não substitui avaliação profissional</p>
+        </div>
+
+        <div class="flex items-center justify-between no-print">
+          <h2 class="font-semibold text-xl text-[#0d4f8b]">
+            <i class="fas fa-clipboard-list mr-1"></i> Resultado da Análise
+          </h2>
+          <button onclick="window.print()" class="text-sm px-3 py-1.5 rounded-lg bg-slate-700 text-white hover:bg-slate-800">
+            <i class="fas fa-print mr-1"></i> Imprimir / PDF
+          </button>
+        </div>
+        <div id="resultsContainer"></div>
+      </div>
+    </div>
+
+    <div id="panel-mav" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border p-5 mb-5">
+        <h2 class="font-semibold text-xl text-[#0d4f8b] mb-2">
+          <i class="fas fa-exclamation-triangle text-red-600 mr-1"></i> Medicamentos de Alta Vigilância (MAVs) – HRBA
+        </h2>
+        <p class="text-sm text-slate-600 mb-4">
+          Lista oficial do hospital. Medicamentos potencialmente perigosos recebem <span class="mav-badge">ETIQUETA VERMELHA</span> no sistema Tasy. 
+          Extraído do Manual de Padronização de Medicamentos do HRBA.
+        </p>
+
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg text-red-700 mb-3 border-b pb-1">
+            2.1 Medicamentos com Sonoridade Semelhante (SS)
+          </h3>
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead class="sticky top-0">
+                <tr class="bg-red-50 text-left">
+                  <th class="border p-2 font-semibold">Medicamento</th>
+                  <th class="border p-2 font-semibold">Pode ser confundido com</th>
+                </tr>
+              </thead>
+              <tbody id="ssTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-red-700 mb-3 border-b pb-1">
+            2.2 Medicamentos Potencialmente Perigosos (MPPs) — Etiqueta Vermelha
+          </h3>
+          <div id="mppList" class="grid md:grid-cols-2 gap-3 text-sm"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-about" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+        <h2 class="font-semibold text-xl text-[#0d4f8b]">Sobre este Protótipo</h2>
+        <p class="text-sm leading-relaxed">
+          Este site foi desenvolvido como produto tecnológico do Trabalho de Conclusão de Residência (TCR) de 
+          <strong>Marco Antonio da Costa Ferreira</strong>, do Programa de Residência Multiprofissional em Atenção Integral 
+          em Ortopedia e Traumatologia da Universidade do Estado do Pará (UEPA), realizado no Hospital Regional do Baixo Amazonas (HRBA).
+        </p>
+        <p class="text-sm leading-relaxed">
+          <strong>Objetivo:</strong> oferecer uma ferramenta gratuita, de código aberto e de fácil atualização para checagem de 
+          interações medicamentosas potenciais (IMPs), com foco no perfil de pacientes de Traumato-Ortopedia, utilizando os 
+          medicamentos padronizados no HRBA e adaptada à realidade do SUS.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+          <div class="bg-slate-50 rounded-lg p-4">
+            <h4 class="font-semibold text-[#0d4f8b] mb-2">Fontes de dados</h4>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li>Padronização de Medicamentos do HRBA</li>
+              <li>Drugs.com / conceitos Micromedex®</li>
+              <li>Bulas ANVISA e alertas ISMP</li>
+              <li>Literatura de ortopedia e trauma</li>
+              <li>Lista oficial de MAVs do hospital</li>
+            </ul>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4">
+            <h4 class="font-semibold text-[#0d4f8b] mb-2">Próximos passos (TCR)</h4>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+              <li>Parceria com NTI do HRBA</li>
+              <li>Programadores voluntários UEPA/UFOPA</li>
+              <li>Treinamentos de 30 min por turno</li>
+              <li>QR Code nos postos + vídeo tutorial</li>
+              <li>Integração futura com Tasy</li>
+            </ul>
+          </div>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-4 text-sm">
+          <h4 class="font-semibold text-[#0d4f8b] mb-2">Hospedagem no HRBA</h4>
+          <p>O arquivo <code>index.html</code> é estático e pode ser colocado em qualquer servidor web interno (Apache, Nginx, IIS) ou pasta compartilhada da intranet. 
+          Não requer banco de dados nem backend. Basta copiar a pasta e apontar o navegador para o arquivo.</p>
+        </div>
+        <p class="text-xs text-slate-500 pt-2 border-t">
+          Orientador: Prof. MSc. Christian Diniz Lima e Silva • Santarém-PA • 2026<br>
+          Código aberto • Gratuito • Adaptável • Baixo custo de manutenção
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6 border-t bg-white no-print">
+    <p>Protótipo • TCR Marco Antonio da Costa Ferreira • Residência Multiprofissional UEPA / HRBA • 2026</p>
+    <p class="mt-1">Orientador: Prof. MSc. Christian Diniz Lima e Silva</p>
+  </footer>
+
+  <script>
+    const drugs = [
+  {
+    "id": "cido_ursodesoxic_lico",
+    "name": "Ácido Ursodesoxicólico (Ursacol)",
+    "class": "Ácido Biliar",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "etilefrina",
+    "name": "ETILefrina (Efortil)",
+    "class": "Adrenérgico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "misoprostrol",
+    "name": "Misoprostrol (Prostokos)",
+    "class": "Agente Abortivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dobutamina",
+    "name": "DOBUTamina (Dobutrex)",
+    "class": "Amina vasoativa",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "dopamina",
+    "name": "DOPamina (RIVivan)",
+    "class": "Amina vasoativa",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "efedrina",
+    "name": "EFEDRina (Efedrin)",
+    "class": "Amina vasoativa",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "epinefrina",
+    "name": "EPINefrina (Adrenalina)",
+    "class": "Amina vasoativa",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "norepinefrina",
+    "name": "NOREPINefrina (Noradrenalina/ Hyponor)",
+    "class": "Amina vasoativa",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "amicacina",
+    "name": "Amicacina (Novamin)",
+    "class": "Aminoglicosídeo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gentamicina",
+    "name": "GENTAmicina (Garamicina)",
+    "class": "Aminoglicosídeo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "neomicina",
+    "name": "NEOmicina (Nebacetin Top)",
+    "class": "Aminoglicosídeo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "code_na_paracetamol",
+    "name": "Codeína + Paracetamol (Tylex/ Paco)",
+    "class": "Analgésico Narcótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fentanila",
+    "name": "Fentanila (Fentanest)",
+    "class": "Analgésico Narcótico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "metadona",
+    "name": "Metadona (Mytedon)",
+    "class": "Analgésico Narcótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "morfina",
+    "name": "Morfina (Dimorf)",
+    "class": "Analgésico Narcótico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "tramadol",
+    "name": "Tramadol (Tramal)",
+    "class": "Analgésico Narcótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "petidina",
+    "name": "Petidina (Dolossal)",
+    "class": "Analgésico Narcótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sufentanila_despadronizado",
+    "name": "SUfentanila (Despadronizado) (Fastfen)",
+    "class": "Analgésico Narcótico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "sufentanila",
+    "name": "SUfentanila (Fastfen)",
+    "class": "Analgésico Narcótico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "cetoprofeno",
+    "name": "CETOPRofeno (Profenid)",
+    "class": "Analgésico, Antipirético, Anti-i...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "mesalazina",
+    "name": "Mesalazina (Mesacol)",
+    "class": "Analgésico, Antipirético, Anti-i...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_acetilsalic_lico",
+    "name": "Ácido Acetilsalicílico (AAS/Aspirina)",
+    "class": "Analgésico, Antipirético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dipirona",
+    "name": "Dipirona (Novalgina)",
+    "class": "Analgésico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ibuprofeno",
+    "name": "IBUPRofeno (Alivium)",
+    "class": "Analgésico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tenoxicam",
+    "name": "Tenoxicam (Tilatil)",
+    "class": "Analgésico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "paracetamol",
+    "name": "Paracetamol (Tylenol)",
+    "class": "Analgésicos",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nalbufina_despadronizado",
+    "name": "Nalbufina (Despadronizado) (Nubain)",
+    "class": "Analgésicos opióides",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "propofol",
+    "name": "Propofol (Diprivan/Propovan)",
+    "class": "Anestésico geral",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "isoflurano_despadronizado",
+    "name": "ISOflurano (Despadronizado) (Isoforine)",
+    "class": "Anestésico geral Inalatória",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sevoflurano_permanecer_caixa_alta",
+    "name": "SEVOflurano(Permanecer caixa alta?) (Sevocris)",
+    "class": "Anestésico geral Inalatória",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bupivaca_na_glicose",
+    "name": "BUPIVAcaína + Glicose (Neocaína Pesada)",
+    "class": "Anestésico Local",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "mepivaca_na_e_epinefrina",
+    "name": "MEPIVAcaína e epinefrina (Mepivalem AD)",
+    "class": "Anestésico Local",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "levobupivaca_na",
+    "name": "LEVOBUPIVAcaína (Novabupi sem vaso)",
+    "class": "Anestésico Local",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "levobupivaca_na_epinefrina",
+    "name": "LEVOBUPIVAcaína + epinefrina (Novabupi com vaso)",
+    "class": "Anestésico Local",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "levobupivaca_na_isob_rica",
+    "name": "LEVOBUPIVAcaína isobárica (Novabupi isobárica)",
+    "class": "Anestésico Local",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lidoca_na",
+    "name": "LIDOcaína (Xylestesin sem vaso)",
+    "class": "Anestésico Local",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lidoca_na_epinefrina",
+    "name": "LIDOcaína + Epinefrina (Xylestesin com vaso)",
+    "class": "Anestésico Local",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "tetraca_na_fenilefrina",
+    "name": "Tetracaína + FENILefrina (Anestésico)",
+    "class": "Anestésico Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "proximetaca_na_despadronizar_e_padronizar_oxibuproca_na",
+    "name": "PROXIMETAcaína (Despadronizar e padronizar Oxibuprocaína) (Anestalcon)",
+    "class": "Anestésico Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lidoca_na_gel_ia",
+    "name": "LIDOcaína geléia (Xylestesin)",
+    "class": "Anestésico Tópica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lidoca_na_spray",
+    "name": "LIDOcaína spray (Xylestesin)",
+    "class": "Anestésico Tópica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dextrocetamina",
+    "name": "DexTROCETAMina (Ketamin)",
+    "class": "Anestésico venoso não opióide",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tiopental",
+    "name": "Tiopental (Thiopentax)",
+    "class": "Anestésico venoso não opióide",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "etomidato",
+    "name": "Etomidato (Hypnomidate)",
+    "class": "Anestésico venoso não opióide",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "alfentanila",
+    "name": "ALfentanila (Rapifen, Alfast)",
+    "class": "Anestésico venoso opióide",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "remifentanila",
+    "name": "REMIfentanila (Ultiva)",
+    "class": "Anestésico venoso opióide",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "cloranfenicol_despadronizado",
+    "name": "Cloranfenicol (Despadronizado) (Arifenicol)",
+    "class": "Anfenicol",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidrocortisona",
+    "name": "HIDROCORTisona (Flebocortid, Solu-cortef)",
+    "class": "Anti-inflamatório hormonal",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "diazepam",
+    "name": "DIazepam (Valium)",
+    "class": "Ansiolítico, benzodiazepínico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lorazepam",
+    "name": "LORazepam (Ansirax)",
+    "class": "Ansiolítico, hipinótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "midazolam",
+    "name": "Midazolam (Dormonid)",
+    "class": "Ansiolítico, Hipnótico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "losartana",
+    "name": "Losartana (Aradois)",
+    "class": "Antagonista de Receptor de Angio...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ranitidina_despadronizado",
+    "name": "Ranitidina (Despadronizado) (Antak)",
+    "class": "Antagonista do receptor H2",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidr_xido_de_alum_nio",
+    "name": "Hidróxido de Alumínio (Asilone)",
+    "class": "Antiácido",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clopidogrel",
+    "name": "Clopidogrel (Plavix)",
+    "class": "Antiagregante plaquetário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tirofibana",
+    "name": "TIROFIbana (Agrastat)",
+    "class": "Antiagregante plaquetário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "desloratadina",
+    "name": "DESloratadina (Sigmaliv)",
+    "class": "Antialérgico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "difenidramina",
+    "name": "DiFENIDRAMina (Difenidramina)",
+    "class": "Antialérgico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "loratadina",
+    "name": "Loratadina (Claritin)",
+    "class": "Antialérgico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "prometazina",
+    "name": "Prometazina (Fenergan)",
+    "class": "Antialérgico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sulfato_ferroso",
+    "name": "Sulfato ferroso (Combiron)",
+    "class": "Antianêmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "diltiazem",
+    "name": "Diltiazem (Cardizem)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "isossorbida_dinitrato_sl",
+    "name": "Isossorbida, DINITRATO  SL (Isordil)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "isossorbida_dinitrato",
+    "name": "Isossorbida, DINITRATO (Isordil)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "isossorbida_mononitrato",
+    "name": "Isossorbida, MONONITRATO (Monocordil)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nitroglicerina",
+    "name": "NitroGLICERINA (Tridil)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "propatilnitrato",
+    "name": "Propatilnitrato (Sustrate)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "atenolol",
+    "name": "Atenolol (Atenol)",
+    "class": "Antianginoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "adenosina",
+    "name": "Adenosina (Adenocard)",
+    "class": "Antiarrítmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "amiodarona",
+    "name": "Amiodarona (Ancoron)",
+    "class": "Antiarrítmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "carvedilol",
+    "name": "Carvedilol (Cardilol)",
+    "class": "Antiarrítmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "enoxaparina",
+    "name": "ENOXAparina (Clexane)",
+    "class": "Anticoagulante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "heparina",
+    "name": "HEparina (Hepamax/Liquemine)",
+    "class": "Anticoagulante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "rivaroxabana",
+    "name": "RIVAROXAbana (Xarelto)",
+    "class": "Anticoagulante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "varfarina",
+    "name": "Varfarina (Marevan)",
+    "class": "Anticoagulante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "escopolamina",
+    "name": "ESCOPOLamina (Buscopan)",
+    "class": "Anticolinérgico e Antiespasmódico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "carbamazepina",
+    "name": "Carbamazepina (Tegretol)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clonazepam",
+    "name": "CLONazepam (Rivotril)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fenito_na",
+    "name": "FenITOÍNA (Hidantal)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fenobarbital",
+    "name": "FenOBARBITAL (Fenocris)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gabapentina",
+    "name": "GABAPENtina (Neurotin)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sulfato_de_magn_sio",
+    "name": "Sulfato de magnésio",
+    "class": "Anticonvulsivante ??",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "topiramato",
+    "name": "Topiramato (Topamax)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "vaproato_de_s_dio",
+    "name": "Vaproato de sódio (Depakene)",
+    "class": "Anticonvulsivante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fluoxetina",
+    "name": "FLUOXEtina (Fluxene/Prozac)",
+    "class": "Antidepressivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sertralina",
+    "name": "SERTRALina (Assert)",
+    "class": "Antidepressivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "amitriptilina",
+    "name": "AMITRIPTILina (Tryptanol/Amytril)",
+    "class": "Antidepressivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "loperamida",
+    "name": "LOPERamida (Imosec)",
+    "class": "Antidiarreico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "racecadotrila",
+    "name": "Racecadotrila (Tiorfan)",
+    "class": "Antidiarreico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "saccharomyces_boulardii",
+    "name": "Saccharomyces boulardii (Floratil®)",
+    "class": "Antidiarreico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "atropina_continua_padr_o",
+    "name": "Atropina - continua padrão? (Pasmodex/Tonaton)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "atropina",
+    "name": "Atropina (Pasmodex/Tonaton)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "azul_de_metileno",
+    "name": "Azul de METILENO (Azul de metileno)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "naloxona",
+    "name": "Naloxona (Narcan)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "protamina",
+    "name": "PROTamina (Protamina)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "flumazenil",
+    "name": "Flumazenil (Lanexat)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fitomenadiona",
+    "name": "Fitomenadiona (Vitamina K/kavit)",
+    "class": "Antídoto",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bromoprida",
+    "name": "BROMOPRida (Digesan, Plamet)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dimenidrinato_30mg_vit_b6_50mg_glic_1g_frut_1g",
+    "name": "Dimenidrinato 30mg, Vit B6 50mg, Glic 1g,  Frut 1g (Dramin B6 DL)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metoclopramida_deixar_como_padr_o",
+    "name": "METOCLOPRamida (Deixar como padrão?) (Plasil)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metoclopramida",
+    "name": "METOCLOPRamida (Plasil)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ondansetrona",
+    "name": "ONDANsetrona (Zofran)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "domperidona",
+    "name": "DOMperidona (Motilium)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "granisetrona_retirar_de_vez_da_padroniza_o",
+    "name": "GRANIsetrona (Retirar de vez da padronização?) (kytril)",
+    "class": "Antiemético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "simeticona",
+    "name": "Simeticona (Luftal)",
+    "class": "Antifisético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "anfotericina_b",
+    "name": "ANFOTERICina B (Anforicin B)",
+    "class": "Antifúngico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fluconazol",
+    "name": "FLUconazol (Zoltec)",
+    "class": "Antifúngico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nistatina",
+    "name": "Nistatina (Micostatin)",
+    "class": "Antifúngico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cetoconazol",
+    "name": "CETOconazol (NizOral)",
+    "class": "Antifúngico Tópica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "timolol",
+    "name": "Timolol (Timoptol)",
+    "class": "Antiglaucoma e Miótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "alopurinol",
+    "name": "Alopurinol (Zyloric)",
+    "class": "Antigotoso",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metildopa",
+    "name": "Metildopa (Aldomet)",
+    "class": "Anti-Hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "anlodipino",
+    "name": "AnloDIPINo (Norvasc)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "captopril",
+    "name": "Captopril (Capoten)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clonidina",
+    "name": "Clonidina (Atensina)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidralazina",
+    "name": "HidrALAZINA (Nepresol)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metropolol_tartarato_de",
+    "name": "METROPolol, Tartarato de (Seloken)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nifedipina",
+    "name": "NifeDIPINa (Adalat)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nitroprusseto_de_s_dio",
+    "name": "NitroPRUSSETO de sódio (Nipride)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "propranolol",
+    "name": "PROPRANolol (Inderal)",
+    "class": "Anti-hipertensivo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dexclorfeniramina",
+    "name": "DexCLORFENIRAMina (Polaramine)",
+    "class": "Anti-histamínico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dexametasona_creme",
+    "name": "DEXAmetasona CREME (Dexaden)",
+    "class": "Anti-inflamatório",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "prednisolona",
+    "name": "PrednisOLona (Prednisim)",
+    "class": "Anti-inflamatório hormonal",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "prednisona",
+    "name": "Prednisona (Meticorten)",
+    "class": "Anti-inflamatório hormonal",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nimesulida",
+    "name": "NIMESULida (Neosulida)",
+    "class": "Anti-inflamatório não esteróidais",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dexametasona",
+    "name": "DEXAmetasona (Dexametasona)",
+    "class": "Anti-inflamatório oftálmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "escina_salicilato_de_dietilam_nio",
+    "name": "Escina+Salicilato de Dietilamônio (Reparil)",
+    "class": "Anti-inflamatório Tópica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "polissulfato_de_mucopolissacarideo",
+    "name": "Polissulfato de Mucopolissacarideo (Hirudoid)",
+    "class": "Anti-inflamatório Tópica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ciprofloxacino",
+    "name": "CIPROfloxacino (Cipro)",
+    "class": "Antimicrobiano Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "moxifloxacino",
+    "name": "MOXIfloxacino (Vigamox)",
+    "class": "Antimicrobiano Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tobramicina",
+    "name": "TOBRAmicina (Tobradex)",
+    "class": "Antimicrobiano Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "benzoilmetronidazol",
+    "name": "Benzoilmetronidazol (Flagyl)",
+    "class": "Antiparasitário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ivermectina",
+    "name": "Ivermectina (RIVectina)",
+    "class": "Antiparasitário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metronidazol",
+    "name": "Metronidazol (Flagyl)",
+    "class": "Antiparasitário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metronidazol_gel_ia_ginecol_gica",
+    "name": "Metronidazol geléia ginecológica (Flagyl)",
+    "class": "Antiparasitário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "albendazol",
+    "name": "Albendazol (Zentel)",
+    "class": "Antiparasitário",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "biperideno",
+    "name": "Biperideno (Akineton)",
+    "class": "Antiparkinsoniano",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidroxicloroquina",
+    "name": "Hidroxicloroquina (Reuquinol)",
+    "class": "Antirreumático",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clorexidina_e_cetilpirid_nio",
+    "name": "Clorexidina e cetilpiridínio (Noplak Max)",
+    "class": "Antisséptico Oral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dropropizina",
+    "name": "Dropropizina (Flextoss)",
+    "class": "Antitussígeno",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "aciclovir",
+    "name": "Aciclovir (Zovirax)",
+    "class": "Antiviral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ganciclovir",
+    "name": "GANciclovir (Cymevene)",
+    "class": "Antiviral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "pancur_nio_continua_padr_o",
+    "name": "PANCURônio (Continua padrão?) (Pancuron)",
+    "class": "Bloqueador Neuromuscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "rocur_nio",
+    "name": "ROCURônio (Esmeron)",
+    "class": "Bloqueador Neuromuscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "suxamet_nio",
+    "name": "SUXAMETônio (Succinilcolina)",
+    "class": "Bloqueador Neuromuscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "citrato_de_cafe_na",
+    "name": "Citrato de Cafeína",
+    "class": "Broncodilatador",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ipratr_pio",
+    "name": "Ipratrópio (Atrovent)",
+    "class": "Broncodilatador",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "salbutamol",
+    "name": "Salbutamol (Aerolin)",
+    "class": "Broncodilatador",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "terbutalina",
+    "name": "Terbutalina (Bricanyl)",
+    "class": "Broncodilatador",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "meropenem",
+    "name": "MEROpenem (Meronem)",
+    "class": "Carbapenem",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cefalexina",
+    "name": "CeFALEXina (Keflex)",
+    "class": "Cefalosporina de 1ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cefazolina",
+    "name": "CeFAZOLina (Kefazol)",
+    "class": "Cefalosporina de 1ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cefuroxima",
+    "name": "CeFUROXima (Zinnat)",
+    "class": "Cefalosporina de 2ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ceftriaxona",
+    "name": "Ceftriaxona (Rocefin)",
+    "class": "Cefalosporina de 3ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ceftazidima",
+    "name": "CeFTAZIDima (Kefadim)",
+    "class": "Cefalosporina de 3ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cefepima",
+    "name": "CeFEPima (Maxcef)",
+    "class": "Cefalosporina de 4ª geração",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sulfato_de_b_rio",
+    "name": "Sulfato de bário (Bariogel)",
+    "class": "Contraste Oral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gadodiamida",
+    "name": "Gadodiamida (Omniscan)",
+    "class": "Contraste Gadolíneo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gadoteridol",
+    "name": "Gadoteridol (Prohance)",
+    "class": "Contraste Gadolíneo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "iohexol",
+    "name": "Iohexol (Omnipaque)",
+    "class": "Contraste Iodado Não Iônico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "azul_patente",
+    "name": "Azul PATENTE (Bleu Patente)",
+    "class": "Corante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fluoresce_na",
+    "name": "Fluoresceína",
+    "class": "Corante Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "beclometasona",
+    "name": "BECLOmetasona (Clenil)",
+    "class": "Corticoide Inalatória e Associações",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "triancinolona_acetonida",
+    "name": "Triancinolona Acetonida (Oncilom)",
+    "class": "Corticóide tópico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hexacetonida_de_triancinolona",
+    "name": "Hexacetonida de Triancinolona (Triancil)",
+    "class": "Corticóide",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "betametasona_acetato_betametasona_fosfato_diss_dico",
+    "name": "Betametasona, acetato + Betametasona, fosfato dissódico (Celestone Soluspan)",
+    "class": "Corticosteróide",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metilprednisolona",
+    "name": "METILprednisOLona (Solu-Medrol)",
+    "class": "Corticosteróide",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "colagenase",
+    "name": "Colagenase (Kollagenase)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "deltametrina_lo_o",
+    "name": "Deltametrina Loção (Deltacid)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "deltametrina_shampoo",
+    "name": "Deltametrina Shampoo (Deltacid)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dersani_lo_o_oleosa",
+    "name": "Dersani Loção Oleosa (Dersani)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nistatina_xido_de_zinco_pom_60g",
+    "name": "Nistatina + Óxido de Zinco POM 60g (Dermodex)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nitrato_de_prata_bast_o",
+    "name": "Nitrato de Prata Bastão (Nitrato de Prata)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "retinol_acetato_colecalciferol_oxido_de_zinco",
+    "name": "Retinol Acetato + Colecalciferol + Oxido de Zinco (Hipoglós)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sulfadiazina_de_prata",
+    "name": "Sulfadiazina de Prata (Dermazine)",
+    "class": "Dermatológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nafazolina_cloreto_de_benzalc_nio_cloreto_de_s_dio",
+    "name": "Nafazolina + Cloreto de Benzalcônio + Cloreto de Sódio (Neosoro adulto)",
+    "class": "Descongestionante nasal",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cloreto_de_s_dio",
+    "name": "Cloreto de Sódio (Maxidrate)",
+    "class": "Descongestionante nasal",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nafazolina_adulto",
+    "name": "Nafazolina adulto (Sorine adulto)",
+    "class": "Descongestionante nasal",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "espironolactona",
+    "name": "Espironolactona (Aldomet)",
+    "class": "Diurético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "furosemida",
+    "name": "FUROSEMida (Lasix)",
+    "class": "Diurético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidroclorotiazida",
+    "name": "HidroCLOROTiazida (Clorana)",
+    "class": "Diurético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "manitol",
+    "name": "Manitol",
+    "class": "Diurético Osmótico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "acetazolamida",
+    "name": "Acetazolamida (Diamox)",
+    "class": "Diurético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "retinol_cloranfenicol_amino_cidos_metionina",
+    "name": "Retinol + Cloranfenicol + Aminoácidos + Metionina (Epitezan)",
+    "class": "Epitelizador e Regenerador Oftál...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "deslanos_deo",
+    "name": "Deslanosídeo (Cedilanide)",
+    "class": "Estimulante cardíaco",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "digoxina",
+    "name": "Digoxina",
+    "class": "Estimulante cardíaco",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "milrinona",
+    "name": "Milrinona (Primacor)",
+    "class": "Estimulante cardíaco",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "metilergometrina",
+    "name": "Metilergometrina (Ergotrate)",
+    "class": "Estimulante uterino",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "albumina_humana",
+    "name": "Albumina Humana (Blaubimax)",
+    "class": "Expansor plasmático",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidroxietilamido",
+    "name": "Hidroxietilamido (Voluven)",
+    "class": "Expansor plasmático",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "eltrombopague",
+    "name": "Eltrombopague (RIVolade)",
+    "class": "Fatores de Crescimento hematopoé...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "eritropoetina_humana_recombinante",
+    "name": "Eritropoetina humana recombinante (Eprex)",
+    "class": "Fatores de Crescimento hematopoé...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "filgrastim",
+    "name": "Filgrastim (Granulokine)",
+    "class": "Fatores de Crescimento hematopoé...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "vancomicina",
+    "name": "VANCOmicina (Vancocid)",
+    "class": "Glicopeptídeo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cianoacrilato",
+    "name": "Cianoacrilato (Histoacryl)",
+    "class": "Hemostático ( Cola e Adesivo cir...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "racemetionina_cloreto_de_colina",
+    "name": "Racemetionina + Cloreto de Colina (Xantinon)",
+    "class": "Hepatoprotetor",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dexmedetomidina",
+    "name": "DexMEDETOMIDina (Precedex)",
+    "class": "Hipnótico e Sedativo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "glibenclamida",
+    "name": "GliBENCLAMida (Glibeneck, Daonil)",
+    "class": "Hipoglicemiante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "glimepirida",
+    "name": "GliMEPIRida (Amaryl)",
+    "class": "Hipoglicemiante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "metformina",
+    "name": "Metformina (Glifage)",
+    "class": "Hipoglicemiante",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "sinvastatina",
+    "name": "Sinvastatina (Zocor)",
+    "class": "Hipolipidêmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "desmopressina",
+    "name": "Desmopressina (DDAVP)",
+    "class": "Hormônio diurético",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ocitocina",
+    "name": "Ocitocina (Syntocinon, Orastina)",
+    "class": "Hormônio hipotalâmico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "levotiroxina",
+    "name": "Levotiroxina (Puran T4)",
+    "class": "Hormônio tireoidiano",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_psilon_aminocapr_ico",
+    "name": "Ácido Épsilon-Aminocapróico (Ipsilon)",
+    "class": "Hormônios Sistêmicos/Hemostáticos",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_tranex_mico",
+    "name": "Ácido tranexâmico (Transamin)",
+    "class": "Hormônios Sistêmicos/Hemostáticos",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "azatioprina",
+    "name": "Azatioprina (Imuran)",
+    "class": "Imunossupressor",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "basiliximabe",
+    "name": "BASILIXImabe (Simulect)",
+    "class": "Imunossupressor",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "micofenolato_s_dico",
+    "name": "Micofenolato sódico (Myfortic)",
+    "class": "Imunossupressor",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tacrolimo",
+    "name": "Tacrolimo (Tarfic)",
+    "class": "Imunossupressor",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "imunoglobulina_anti_rh_d",
+    "name": "Imunoglobulina Anti-rh D (Matergan)",
+    "class": "Imunoterapia",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "omeprazol",
+    "name": "Omeprazol (Oprazon, Losec)",
+    "class": "Inibidor da bomba de prótons",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "neostigmina",
+    "name": "NEostigmina (Prostigmine)",
+    "class": "Inibidor de Acetilcolinesterase",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "piridostigmina",
+    "name": "PIRIDostigmina (Mestinon)",
+    "class": "Inibidor de Acetilcolinesterase",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "insulina_humana_recombinante_nph",
+    "name": "Insulina Humana Recombinante - NPH (Novolin N)",
+    "class": "Insulina",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "insulina_regular_humana",
+    "name": "Insulina Regular Humana (Novolin R)",
+    "class": "Insulina",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "bisacodil",
+    "name": "Bisacodil (Lacto-Purga, Dulcolax)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "lactulose",
+    "name": "Lactulose (Lactulona, Pentalac)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "leo_mineral",
+    "name": "Óleo Mineral (Nujol)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "picossulfato_s_dico",
+    "name": "Picossulfato sódico (Gutalax)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "suposit_rio_de_glicerina_adulto",
+    "name": "Supositório de glicerina adulto (Glicerol)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "suposit_rio_de_glicerina_infantil",
+    "name": "Supositório de glicerina infantil (Glicerol)",
+    "class": "Laxante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fosfato_de_s_dio_dib_sico_fosfato_de_s_dio_monob_sico",
+    "name": "Fosfato de sódio dibásico + Fosfato de sódio monobásico (Fleet Enema, Phosfoema)",
+    "class": "Laxante/Umectante/Lubrificante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_de_glicerina",
+    "name": "Solução de Glicerina (Clisterol 12%)",
+    "class": "Laxante/Umectante/Lubrificante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clindamicina",
+    "name": "CLINDAmicina (Ilosone)",
+    "class": "Lincosamida",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dextrana_70_hipromelose",
+    "name": "Dextrana 70 + Hipromelose (LacriBell)",
+    "class": "Lubrificante Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "claritromicina",
+    "name": "CLARITROmicina (Klaricid)",
+    "class": "Macrolídeo",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ciclopentolato",
+    "name": "Ciclopentolato (Ciclopégico)",
+    "class": "Midriático e Cicloplégico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "fenilefrina",
+    "name": "FENILefrina (Fenilefrina)",
+    "class": "Midriático e Cicloplégico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tropicamida",
+    "name": "Tropicamida (Mydriacyl)",
+    "class": "Midriático e Cicloplégico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "acetilciste_na",
+    "name": "Acetilcisteína (Fluimucil)",
+    "class": "Mucolítico e Expectorante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ambroxol",
+    "name": "Ambroxol (Mucosolvan Adulto)",
+    "class": "Mucolítico e Expectorante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "clorpromazina",
+    "name": "Clorpromazina (Amplictil)",
+    "class": "Neuroléptico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "haloperidol",
+    "name": "Haloperidol (Haldol)",
+    "class": "Neuroléptico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "quetiapina",
+    "name": "QUETIAPina (Seroquel)",
+    "class": "Neuroléptico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "risperidona",
+    "name": "RISperidona (Risperdal)",
+    "class": "Neuroléptico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bolsa_de_nutri_o_parenteral_manipulada_adulto",
+    "name": "Bolsa de Nutrição Parenteral Manipulada Adulto (-)",
+    "class": "Soluções de Nutrição Parenteral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bolsa_de_nutri_o_parenteral_manipulada_infantil",
+    "name": "Bolsa de Nutrição Parenteral Manipulada Infantil (-)",
+    "class": "Soluções de Nutrição Parenteral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_poliacrilico",
+    "name": "Ácido Poliacrilico (Refresh Gel)",
+    "class": "Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidroxipropil_metilcelulose",
+    "name": "Hidroxipropil-Metilcelulose (Oft Visc)",
+    "class": "Oftalmológico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "linezolida",
+    "name": "LINEZOLida (Zyvox)",
+    "class": "Outros Antimicrobianos",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "amoxicilina",
+    "name": "AMOXIcilina (Amoxil)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "benzilpenicilina_benzatina",
+    "name": "Benzilpenicilina BENZATINA (Benzetacil)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "benzilpenicilina_pot_ssica",
+    "name": "Benzilpenicilina POTÁSSICA (Megapen)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "oxacilina",
+    "name": "OXAcilina (Staficilin)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ampicilina",
+    "name": "AMPIcilina (Unasyn)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "ampicilina_sulbactam",
+    "name": "AMPIcilina+ Sulbactam (Unasyn)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "piperacilina_tazobactam",
+    "name": "PIPERAcilina + Tazobactam (Tazocin)",
+    "class": "Penicilina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "amoxicilina_cido_clavul_nico",
+    "name": "AMOXIcilina + Ácido Clavulânico (Clavulin)",
+    "class": "Penicilina e Inibidor de Beta-La...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "polimixina_b",
+    "name": "POLIMIXina B (Sulfato de Polimixina B)",
+    "class": "Polimixinas",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "tiamina_piridoxina_cianocobalamina",
+    "name": "Tiamina+piridoxina+cianocobalamina (Citoneurin)",
+    "class": "Polivitamínico sem minerais",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "alprostadil",
+    "name": "Alprostadil (Carveject/Prostavasin)",
+    "class": "Prostaglandinas",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "misoprostol",
+    "name": "Misoprostol (Prostokos)",
+    "class": "Prostaglandinas",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "papa_na_pomada",
+    "name": "Papaína pomada (Papaína)",
+    "class": "Proteolítico
+Anti-inflamatório",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "levofloxacino",
+    "name": "LEVOfloxacino (Tamiram)",
+    "class": "Quinolona",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "atrac_rio",
+    "name": "Atracúrio (Tracur)",
+    "class": "Relaxante Muscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "baclofeno",
+    "name": "BACLofeno (Lioresal)",
+    "class": "Relaxante Muscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "dantroleno",
+    "name": "Dantroleno (Dantrolen)",
+    "class": "Relaxante Muscular",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bicarbonato_de_s_dio",
+    "name": "Bicarbonato de Sódio",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cloreto_de_pot_ssio",
+    "name": "Cloreto de Potássio",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cloreto_de_s_dio_cloreto_de_pot_ssio_cloreto_de_c_lcio",
+    "name": "Cloreto de Sódio + Cloreto de Potássio + Cloreto de Cálcio (Soro Ringer Simples)",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cloreto_de_s_dio_cloreto_de_pot_ssio_cloreto_de_c_lcio_lactato_de_s_dio",
+    "name": "Cloreto de Sódio + Cloreto de Potássio + Cloreto de Cálcio + Lactato de Sódio (Soro Ringer com Lactato)",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "glicofisiol_gico",
+    "name": "Glicofisiológico (Soro Glico Fisiológico)",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "soro_glicosado",
+    "name": "Soro Glicosado",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gliconato_de_c_lcio",
+    "name": "Gliconato de Cálcio (Gluconato de Cálcio)",
+    "class": "Repositor e Solução hidroeletrol...",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "poliestirenossulfonato_de_c_lcio_envelope",
+    "name": "Poliestirenossulfonato de Cálcio Envelope (Sorcal, Calnate)",
+    "class": "Resina de troca iônica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "bicarbonato_de_s_dio_cloreto_de_pot_ssio_glicose",
+    "name": "Bicarbonato de Sódio + Cloreto de potássio+Glicose (Solução cardioplegica)",
+    "class": "Solução Hidroeletrolítica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "azul_de_trypano",
+    "name": "Azul de TRYPANO (Azul Trypan)",
+    "class": "Solução oftálmica",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "custodiol",
+    "name": "CUSTODiol (Custodiol)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_de_di_lise_cida",
+    "name": "Solução de Diálise Ácida (CPHD-Ácido SEM glicose)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_de_di_lise_cida_com_glicose_3_5",
+    "name": "Solução de Diálise Ácida COM GLICOSE 3,5% (CPHD-Ácido COM glicose)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_de_di_lise_b_sica_bicarbonato_de_s_dio_8_4",
+    "name": "Solução de Diálise BÁSICA - Bicarbonato de sódio 8,4% (CPHD-Básico)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_capd_1_5",
+    "name": "Solução p/ CAPD 1,5% (Kit de Manutenção Capd 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_capd_2_5",
+    "name": "Solução p/ CAPD 2,5% (Kit de Manutenção Capd 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_capd_4_25",
+    "name": "Solução p/ CAPD 4,25% (Kit de Manutenção Capd 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_dpa_1_5",
+    "name": "Solução p/ DPA 1,5% (Kit de Manutenção DPA 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_dpa_2_5",
+    "name": "Solução p/ DPA 2,5% (Kit de Manutenção DPA 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "solu_o_p_dpa_4_25",
+    "name": "Solução p/ DPA 4,25% (Kit de Manutenção DPA 30 Dias)",
+    "class": "Solução para Diálise",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "gua_destilada",
+    "name": "Água destilada",
+    "class": "Solução para infusão parenteral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "glicose_50",
+    "name": "Glicose 50% (Glicose Hipertônica 50%)",
+    "class": "Solução para infusão parenteral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sulfametoxazol_trimetropima",
+    "name": "Sulfametoxazol + Trimetropima (Bactrim)",
+    "class": "Sulfonamida",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "carbonato_de_c_lcio",
+    "name": "Carbonato de Cálcio (Oscal)",
+    "class": "Suplemento Mineral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sacarato_de_hidr_xido_f_rrico",
+    "name": "Sacarato de Hidróxido Férrico (Noripurum)",
+    "class": "Suplemento Mineral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "alfa_poractante",
+    "name": "Alfa Poractante (Curosurf)",
+    "class": "Surfactante",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "hidrocortisona_neomicina_polimixina",
+    "name": "Hidrocortisona+Neomicina+Polimixina (Otosporin)",
+    "class": "Tópico otológico",
+    "mav": true,
+    "br": true
+  },
+  {
+    "id": "alteplase",
+    "name": "Alteplase (Actylise)",
+    "class": "Trombolítico",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "betaistina",
+    "name": "Betaistina (Labirin)",
+    "class": "Vasodilatoador cerebral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "papaverina",
+    "name": "PapaVERina (Papaverina)",
+    "class": "Vasodilator",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "sildenafila",
+    "name": "Sildenafila",
+    "class": "Vasodilator",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cilostazol",
+    "name": "Cilostazol (Cebralat)",
+    "class": "Vasodilator cerebral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cinarizina",
+    "name": "Cinarizina (Stugeron)",
+    "class": "Vasodilator cerebral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "nimodipino",
+    "name": "NimoDIPINo (Oxygen)",
+    "class": "Vasodilator cerebral",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "acetato_de_retinol_e_colecalciferol",
+    "name": "Acetato de Retinol E Colecalciferol (Ad-Til)",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "quelato_de_zinco",
+    "name": "Quelato de Zinco",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_asc_rbico_vitamina_c",
+    "name": "Ácido Ascórbico (Vitamina C) (Cewin, Redoxon)",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "cido_f_lico",
+    "name": "Ácido fólico (Folacin)",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "calcitriol",
+    "name": "CALCITRiol (Sigmatriol; Rocaltrol)",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  },
+  {
+    "id": "complexo_b_dexpantenol_pr_b5_nicotinamida_b3_piridoxina_b6_riboflavina_b2_tiamina_b1",
+    "name": "Complexo B ( Dexpantenol - Pró B5); Nicotinamida (B3); Piridoxina (B6); Riboflavina (B2); Tiamina (B1) (Hyplex B)",
+    "class": "Vitamina",
+    "mav": false,
+    "br": true
+  }
+];
+
+    const interactionsDB = [
+      
+      // ========== INTERAÇÕES ENVOLVENDO DIPIRONA ==========
+      { pair: ["dipirona","enoxaparina"], severity: "major", title: "Dipirona + Enoxaparina",
+        mechanism: "Farmacodinâmico – efeito antiagregante plaquetário transitório da dipirona + anticoagulação (aumento do risco de sangramento)",
+        evidence: "Boa (classificada como Major em bases que incluem metamizol; evidência teórica + relatos de classe)",
+        description: "A dipirona (metamizol) possui efeito inibitório transitório sobre a agregação plaquetária (via COX). Associada a HBPM, eleva o risco de sangramento, especialmente GI e no sítio cirúrgico. Diferente de muitos AINEs clássicos, a dipirona tem melhor perfil GI, por isso é amplamente preferida no Brasil em pacientes anticoagulados, mas o risco residual de sangramento existe e deve ser considerado.",
+        clinicalOrtho: "Combinação frequente em pacientes de trauma/fratura que recebem profilaxia com enoxaparina e analgesia com dipirona. A dipirona tem melhor tolerabilidade gastrointestinal que muitos AINEs clássicos, sendo amplamente utilizada no Brasil.",
+        monitoring: "Sinais de sangramento (hematoma cirúrgico, melena, hematúria, queda de Hb), plaquetas. Em uso prolongado ou doses altas: atenção também a agranulocitose (rara).",
+        alternatives: "Manter dipirona como primeira escolha de analgesia não opioide na maioria dos casos (melhor tolerabilidade GI que cetoprofeno/ibuprofeno). Se risco hemorrágico muito alto: preferir paracetamol puro. Avaliar necessidade real de anticoagulação.",
+        management: "Usar a menor dose eficaz e o menor tempo possível. Monitorar sangramento. Em sangramento importante: suspender ambos, suporte hemodinâmico e considerar protamina (efeito parcial sobre enoxaparina)." },
+      { pair: ["dipirona","heparina"], severity: "major", title: "Dipirona + Heparina",
+        mechanism: "Farmacodinâmico – antiagregação + anticoagulação",
+        evidence: "Boa",
+        description: "Mesmo mecanismo da associação com enoxaparina. Risco de sangramento aumentado.",
+        clinicalOrtho: "Pacientes em tratamento com HNF (ex.: TEV, síndromes coronarianas) + analgesia com dipirona.",
+        monitoring: "Sangramento, TTPa, plaquetas.",
+        alternatives: "Dipirona ou paracetamol. Avaliar risco-benefício individual.",
+        management: "Monitorar. Protamina é mais eficaz para reverter HNF do que enoxaparina." },
+      { pair: ["dipirona","rivaroxabana"], severity: "major", title: "Dipirona + Rivaroxabana",
+        mechanism: "Farmacodinâmico (antiagregação) + possível farmacocinético (dipirona induz CYP3A4, e rivaroxabana é substrato de CYP3A4)",
+        evidence: "Razoável a boa (indução enzimática documentada; risco de sangramento por classe)",
+        description: "Além do efeito antiagregante, a dipirona em doses altas e por mais de 1 dia pode induzir CYP3A4, potencialmente reduzindo um pouco a exposição da rivaroxabana. O efeito líquido mais preocupante na prática é o aumento do risco de sangramento.",
+        clinicalOrtho: "Pacientes com fratura de quadril ou artroplastia em uso de rivaroxabana + dipirona para dor.",
+        monitoring: "Sangramento, função renal.",
+        alternatives: "Dipirona ou paracetamol. Evitar AINEs clássicos se o risco hemorrágico for elevado.",
+        management: "Usar com cautela. Preferir cursos curtos de dipirona." },
+      { pair: ["dipirona","varfarina"], severity: "moderate", title: "Dipirona + Varfarina",
+        mechanism: "Farmacodinâmico (risco de sangramento) + dados limitados e conflitantes sobre efeito no INR",
+        evidence: "Razoável (estudos antigos mostram resultados variáveis no prothrombin complex; risco de sangramento é o principal)",
+        description: "Há relatos e estudos antigos com resultados variáveis sobre influência da dipirona no INR. O risco clinicamente mais relevante é o de sangramento por efeito antiagregante, que não aparece no INR.",
+        clinicalOrtho: "Pacientes com FA ou prótese valvar em uso crônico de varfarina que internam por trauma/fratura.",
+        monitoring: "INR + sinais clínicos de sangramento (o INR isolado pode não capturar todo o risco).",
+        alternatives: "Dipirona ou paracetamol em doses moderadas. Evitar AINEs clássicos se possível.",
+        management: "Monitorar INR e clínica. Evitar doses altas prolongadas de dipirona." },
+      { pair: ["dipirona","aas"], severity: "moderate", title: "Dipirona + Ácido Acetilsalicílico (AAS)",
+        mechanism: "Farmacodinâmico – a dipirona pode atenuar o efeito antiagregante irreversível do AAS se administrada antes ou junto",
+        evidence: "Boa (estudos de agregação plaquetária)",
+        description: "Quando a dipirona é dada antes ou concomitantemente ao AAS, pode ocupar o sítio da COX-1 e reduzir a inibição plaquetária definitiva causada pelo AAS. O efeito é mais relevante se o AAS for usado em baixa dose para prevenção cardiovascular.",
+        clinicalOrtho: "Pacientes cardiopatas ou com stent que usam AAS e recebem dipirona para dor no pós-operatório ortopédico.",
+        monitoring: "Eventos trombóticos (em teoria) e sangramento.",
+        alternatives: "Administrar o AAS pelo menos 30–60 min antes da dipirona, ou usar paracetamol. Manter AAS se indicação cardiovascular forte.",
+        management: "Se possível, dar AAS primeiro. Em pacientes de alto risco cardiovascular, discutir com cardiologia." },
+      { pair: ["dipirona","cetoprofeno"], severity: "moderate", title: "Dipirona + Cetoprofeno",
+        mechanism: "Farmacodinâmico – potencialização de efeitos adversos (GI, renal, sangramento)",
+        evidence: "Razoável",
+        description: "Associação de dois analgésicos com atividade sobre COX aumenta risco de efeitos adversos sem grande ganho analgésico adicional na maioria dos casos.",
+        clinicalOrtho: "Prescrição dupla comum em postos e emergências. Geralmente desnecessária.",
+        monitoring: "Sangramento GI, função renal.",
+        alternatives: "Preferir monoterapia. Dipirona tem melhor tolerabilidade gastrointestinal; cetoprofeno pode ser usado isoladamente por curto período se houver componente inflamatório importante.",
+        management: "Evitar associação rotineira. Preferir monoterapia." },
+      { pair: ["dipirona","ibuprofeno"], severity: "moderate", title: "Dipirona + Ibuprofeno",
+        mechanism: "Farmacodinâmico – risco aditivo de efeitos adversos",
+        evidence: "Razoável",
+        description: "Mesma lógica da associação com outros AINEs.",
+        clinicalOrtho: "Evitar polifarmácia analgésica desnecessária.",
+        monitoring: "GI e renal.",
+        alternatives: "Dipirona isolada ou paracetamol.",
+        management: "Preferir um único agente." },
+      { pair: ["dipirona","tramadol"], severity: "minor", title: "Dipirona + Tramadol",
+        mechanism: "Farmacodinâmico – analgesia multimodal (geralmente benéfica)",
+        evidence: "Boa (prática clínica estabelecida)",
+        description: "Associação racional de analgesia multimodal. O risco principal é o inerente ao tramadol (sedação, convulsão, efeitos serotoninérgicos).",
+        clinicalOrtho: "Combinação frequente e útil para dor moderada a intensa em pacientes ortopédicos.",
+        monitoring: "Sedação, FR, eficácia analgésica.",
+        alternatives: "Pode-se adicionar paracetamol. Evitar AINEs se possível.",
+        management: "Uso racional. Ajustar doses individualmente conforme resposta e tolerância." },
+      { pair: ["dipirona","morfina"], severity: "minor", title: "Dipirona + Morfina",
+        mechanism: "Farmacodinâmico – analgesia multimodal (benéfica)",
+        evidence: "Boa",
+        description: "Associação segura do ponto de vista de interação e que pode reduzir o consumo de opioide.",
+        clinicalOrtho: "Pós-operatório de grandes cirurgias ortopédicas.",
+        monitoring: "Sedação e respiração (pelo opioide).",
+        alternatives: "—",
+        management: "Manter dipirona em horário fixo e morfina sob demanda ou PCA, conforme protocolo institucional." },
+      { pair: ["dipirona","midazolam"], severity: "minor", title: "Dipirona + Midazolam",
+        mechanism: "Sem interação clinicamente significativa relevante",
+        evidence: "—",
+        description: "Não há interação importante documentada. Ambos podem ser usados no perioperatório.",
+        clinicalOrtho: "Sedação + analgesia.",
+        monitoring: "Pelo midazolam (sedação/respiração).",
+        alternatives: "—",
+        management: "Uso concomitante aceitável." },
+{ pair: ["enoxaparina","cetoprofeno"], severity: "major", title: "Enoxaparina + Cetoprofeno",
+        mechanism: "Farmacodinâmico – aumento do risco de sangramento (antiagregação + anticoagulação)",
+        evidence: "Boa", description: "AINEs aumentam o risco de hemorragia quando associados a HBPM. Risco maior em idosos, DRC, úlcera prévia ou cirurgia recente.",
+        clinicalOrtho: "Muito comum no pós-operatório de fraturas e artroplastias. Risco de hematoma no sítio cirúrgico e sangramento GI.",
+        monitoring: "Sinais de sangramento, Hb/Ht, plaquetas, função renal.",
+        alternatives: "Preferir dipirona ou paracetamol. Se AINE necessário: menor dose e menor tempo + omeprazol.",
+        management: "Evitar sempre que possível. Em sangramento: suspender ambos, suporte, protamina (parcial para enoxaparina)." },
+      { pair: ["enoxaparina","ibuprofeno"], severity: "major", title: "Enoxaparina + Ibuprofeno",
+        mechanism: "Farmacodinâmico – risco aumentado de sangramento", evidence: "Boa",
+        description: "Ibuprofeno inibe agregação plaquetária de forma reversível e potencializa o anticoagulante.",
+        clinicalOrtho: "Frequente em pacientes com fraturas. Risco de hematoma e sangramento pós-operatório.",
+        monitoring: "Sangramento, hemograma, creatinina.", alternatives: "Dipirona, paracetamol.",
+        management: "Preferir evitar. Se necessário: dose mínima + monitoramento intensivo." },
+      { pair: ["enoxaparina","tenoxicam"], severity: "major", title: "Enoxaparina + Tenoxicam",
+        mechanism: "Farmacodinâmico – risco de hemorragia (meia-vida longa do tenoxicam)", evidence: "Boa",
+        description: "Tenoxicam tem meia-vida prolongada, mantendo o risco de sangramento por mais tempo.",
+        clinicalOrtho: "Usado em dor inflamatória pós-traumática. Combinação de alto risco.",
+        monitoring: "Sangramento, plaquetas, creatinina.", alternatives: "Dipirona + paracetamol.",
+        management: "Evitar associação. Suspender AINE se sinais de sangramento." },
+      { pair: ["enoxaparina","nimesulida"], severity: "major", title: "Enoxaparina + Nimesulida",
+        mechanism: "Farmacodinâmico + risco hepático adicional", evidence: "Razoável a boa",
+        description: "Nimesulida aumenta risco de sangramento e tem perfil de hepatotoxicidade.",
+        clinicalOrtho: "Ainda prescrita em alguns serviços. Preferir evitar com anticoagulante.",
+        monitoring: "Sangramento + enzimas hepáticas.", alternatives: "Dipirona, paracetamol.",
+        management: "Evitar. Preferir suspender nimesulida." },
+      { pair: ["enoxaparina","aas"], severity: "major", title: "Enoxaparina + AAS",
+        mechanism: "Farmacodinâmico – antiagregação irreversível + anticoagulação", evidence: "Excelente",
+        description: "AAS inibe irreversivelmente a COX-1 plaquetária. Risco de sangramento elevado.",
+        clinicalOrtho: "Pacientes cardiopatas ou com stent podem precisar manter AAS. Decisão individualizada.",
+        monitoring: "Sangramento, plaquetas.", alternatives: "Manter AAS 100 mg se indicação cardiovascular forte; analgesia com outros agentes.",
+        management: "Avaliar risco-benefício com cardiologia. Em eletiva frequentemente suspende-se AAS." },
+      { pair: ["rivaroxabana","cetoprofeno"], severity: "major", title: "Rivaroxabana + Cetoprofeno",
+        mechanism: "Farmacodinâmico – risco aumentado de sangramento", evidence: "Boa",
+        description: "DOACs + AINEs elevam risco de hemorragia maior. Antídoto específico raramente disponível no SUS.",
+        clinicalOrtho: "Profilaxia ou tratamento de TEV + dor inflamatória.",
+        monitoring: "Sangramento, função renal (rivaroxabana tem eliminação renal parcial).",
+        alternatives: "Dipirona / paracetamol.", management: "Evitar. Em sangramento grave: suporte + medidas locais." },
+      { pair: ["rivaroxabana","ibuprofeno"], severity: "major", title: "Rivaroxabana + Ibuprofeno",
+        mechanism: "Farmacodinâmico – risco de sangramento", evidence: "Boa",
+        description: "Mesmo padrão de outros AINEs com DOACs.",
+        clinicalOrtho: "Comum em artroplastias e fraturas de quadril.",
+        monitoring: "Sangramento, creatinina.", alternatives: "Dipirona, paracetamol.",
+        management: "Evitar associação." },
+      { pair: ["varfarina","cetoprofeno"], severity: "major", title: "Varfarina + Cetoprofeno",
+        mechanism: "Farmacodinâmico + possível deslocamento proteico", evidence: "Excelente",
+        description: "AINEs potencializam o efeito da varfarina e aumentam sangramento GI.",
+        clinicalOrtho: "Pacientes com prótese valvar ou FA em uso crônico de varfarina que sofrem trauma.",
+        monitoring: "INR frequente, sinais de sangramento.", alternatives: "Dipirona, paracetamol (doses moderadas).",
+        management: "Evitar AINE. Se imprescindível: monitorar INR de perto + proteção gástrica." },
+      { pair: ["varfarina","aas"], severity: "major", title: "Varfarina + AAS",
+        mechanism: "Farmacodinâmico – risco elevado de sangramento", evidence: "Excelente",
+        description: "Associação clássica de alto risco hemorrágico.",
+        clinicalOrtho: "Pacientes com indicação de antiagregação + anticoagulação.",
+        monitoring: "INR, sinais de sangramento.", alternatives: "Discutir com cardiologia a real necessidade de ambos.",
+        management: "Usar apenas se benefício claro superar o risco. Monitoramento rigoroso." },
+      { pair: ["heparina","cetoprofeno"], severity: "major", title: "Heparina + Cetoprofeno",
+        mechanism: "Farmacodinâmico – risco de sangramento", evidence: "Boa",
+        description: "Mesmo mecanismo das outras heparinas + AINEs.",
+        clinicalOrtho: "Pacientes em tratamento ou profilaxia com HNF.",
+        monitoring: "Sangramento, TTPa, plaquetas.", alternatives: "Dipirona, paracetamol.",
+        management: "Evitar. Protamina é mais eficaz para HNF do que para enoxaparina." },
+      { pair: ["enoxaparina","heparina"], severity: "contraindicated", title: "Enoxaparina + Heparina não fracionada",
+        mechanism: "Farmacodinâmico – anticoagulação excessiva", evidence: "Excelente",
+        description: "Associação de duas heparinas aumenta drasticamente o risco de sangramento sem benefício.",
+        clinicalOrtho: "Erro de prescrição possível em transição de terapia.",
+        monitoring: "Não se aplica – evitar.", alternatives: "Escolher apenas uma forma conforme protocolo.",
+        management: "Nunca associar. Se ocorrer: suspender imediatamente e monitorar. Protamina (mais eficaz para HNF)." },
+      { pair: ["tramadol","midazolam"], severity: "major", title: "Tramadol + Midazolam",
+        mechanism: "Farmacodinâmico – depressão do SNC e respiratória aditiva + risco convulsivo",
+        evidence: "Boa", description: "Ambos deprimem o SNC. Risco de sedação excessiva, depressão respiratória e convulsões (tramadol).",
+        clinicalOrtho: "Comum em pacientes com dor + ansiedade ou sedação pré-procedimento.",
+        monitoring: "Nível de consciência, FR, SpO₂. Atenção em idosos e DPOC.",
+        alternatives: "Analgesia multimodal. Menor dose de midazolam se sedação necessária.",
+        management: "Reduzir doses. Em depressão respiratória: suporte, naloxona e flumazenil com cautela." },
+      { pair: ["tramadol","diazepam"], severity: "major", title: "Tramadol + Diazepam",
+        mechanism: "Farmacodinâmico – depressão do SNC + risco convulsivo", evidence: "Boa",
+        description: "Diazepam tem meia-vida longa, prolongando o risco.",
+        clinicalOrtho: "Pacientes com dor + agitação.",
+        monitoring: "Consciência, respiração, sinais de convulsão.",
+        alternatives: "Evitar associação. Outras estratégias de manejo de ansiedade/dor.",
+        management: "Suspender um dos agentes se possível. Suporte e antídotos conforme gravidade." },
+      { pair: ["morfina","midazolam"], severity: "major", title: "Morfina + Midazolam",
+        mechanism: "Farmacodinâmico – depressão respiratória e sedação aditiva", evidence: "Excelente",
+        description: "Clássica interação de alto risco, especialmente em idosos.",
+        clinicalOrtho: "Pós-operatório imediato de grandes cirurgias ortopédicas.",
+        monitoring: "Escala de sedação, FR, SpO₂.",
+        alternatives: "Analgesia multimodal (dipirona + paracetamol + bloqueios regionais).",
+        management: "Titular doses. Naloxona e flumazenil disponíveis." },
+      { pair: ["fentanila","midazolam"], severity: "major", title: "Fentanila + Midazolam",
+        mechanism: "Farmacodinâmico – depressão respiratória profunda", evidence: "Excelente",
+        description: "Combinação usada em procedimentos, mas de alto risco se não monitorada.",
+        clinicalOrtho: "Sedação para redução de fratura, curativos ou pós-operatório.",
+        monitoring: "Monitorização contínua obrigatória.",
+        alternatives: "Doses mínimas eficazes. Preferir técnicas regionais quando possível.",
+        management: "Ambiente com suporte ventilatório pronto. Antídotos à mão." },
+      { pair: ["morfina","tramadol"], severity: "moderate", title: "Morfina + Tramadol",
+        mechanism: "Farmacodinâmico – depressão do SNC aditiva + risco de convulsão e síndrome serotoninérgica",
+        evidence: "Boa", description: "Dois opioides juntos aumentam sedação. Tramadol adiciona risco serotoninérgico e convulsivo.",
+        clinicalOrtho: "Tentativa de analgesia multimodal com dois opioides – geralmente não recomendada.",
+        monitoring: "Sedação, respiração, sinais de síndrome serotoninérgica.",
+        alternatives: "Um opioide principal + adjuvantes não opioides (dipirona, paracetamol, gabapentina, bloqueios).",
+        management: "Evitar associação rotineira. Se usada: reduzir doses e monitorar." },
+      { pair: ["petidina","tramadol"], severity: "major", title: "Petidina + Tramadol",
+        mechanism: "Farmacodinâmico – risco elevado de convulsões e síndrome serotoninérgica",
+        evidence: "Boa", description: "Ambos baixam o limiar convulsivo e têm atividade serotoninérgica.",
+        clinicalOrtho: "Evitar em qualquer cenário ortopédico.",
+        monitoring: "Sinais de convulsão e síndrome serotoninérgica.",
+        alternatives: "Escolher apenas um agente. Preferir morfina ou fentanila se opioide forte necessário.",
+        management: "Não associar." },
+      { pair: ["prometazina","tramadol"], severity: "moderate", title: "Prometazina + Tramadol",
+        mechanism: "Farmacodinâmico – depressão do SNC e possível redução do limiar convulsivo",
+        evidence: "Razoável", description: "Prometazina tem efeito sedativo importante.",
+        clinicalOrtho: "Uso para náuseas ou alergia em pacientes com dor.",
+        monitoring: "Nível de consciência e respiração.",
+        alternatives: "Ondansetrona ou metoclopramida (com ressalvas).",
+        management: "Reduzir doses e monitorar." },
+      { pair: ["prometazina","morfina"], severity: "moderate", title: "Prometazina + Morfina",
+        mechanism: "Farmacodinâmico – depressão do SNC aditiva", evidence: "Boa",
+        description: "Sedação e depressão respiratória potencializadas.",
+        clinicalOrtho: "Pós-operatório com náuseas.",
+        monitoring: "Consciência e respiração.",
+        alternatives: "Ondansetrona.", management: "Usar com cautela e monitorar." },
+      { pair: ["tramadol","ondansetrona"], severity: "moderate", title: "Tramadol + Ondansetrona",
+        mechanism: "Farmacodinâmico / farmacocinético – possível redução do efeito analgésico do tramadol + risco de síndrome serotoninérgica",
+        evidence: "Razoável a boa", description: "Ondansetrona (antagonista 5-HT3) pode antagonizar parte do efeito do tramadol e há relatos de síndrome serotoninérgica.",
+        clinicalOrtho: "Náuseas pós-operatórias são comuns; associação frequente.",
+        monitoring: "Eficácia analgésica, sinais de síndrome serotoninérgica.",
+        alternatives: "Metoclopramida (cautela extrapiramidal) ou dimenidrinato.",
+        management: "Monitorar resposta analgésica. Trocar antiemético ou analgésico se necessário." },
+      { pair: ["tramadol","metoclopramida"], severity: "moderate", title: "Tramadol + Metoclopramida",
+        mechanism: "Farmacodinâmico – risco aumentado de sintomas extrapiramidais e convulsões",
+        evidence: "Razoável", description: "Ambos podem baixar o limiar convulsivo.",
+        clinicalOrtho: "Uso comum para náuseas em pacientes com dor.",
+        monitoring: "Sinais extrapiramidais, convulsões.",
+        alternatives: "Ondansetrona ou dimenidrinato.",
+        management: "Usar com cautela. Preferir outros antieméticos se histórico de convulsão." },
+      { pair: ["ciprofloxacino","tramadol"], severity: "major", title: "Ciprofloxacino + Tramadol",
+        mechanism: "Farmacodinâmico – redução do limiar convulsivo", evidence: "Boa",
+        description: "Quinolonas e tramadol individualmente podem precipitar convulsões; juntos o risco é maior.",
+        clinicalOrtho: "Infecções ósseas ou de partes moles + analgesia com tramadol.",
+        monitoring: "Sinais de excitabilidade do SNC, convulsões.",
+        alternatives: "Trocar o analgésico (dipirona, paracetamol, morfina) ou a quinolona se possível.",
+        management: "Evitar em pacientes de risco. Ter benzodiazepínico pronto." },
+      { pair: ["levofloxacino","tramadol"], severity: "major", title: "Levofloxacino + Tramadol",
+        mechanism: "Farmacodinâmico – redução do limiar convulsivo", evidence: "Boa",
+        description: "Mesmo padrão das quinolonas + tramadol.",
+        clinicalOrtho: "Infecções ortopédicas tratadas com levofloxacino.",
+        monitoring: "Sinais de convulsão.", alternatives: "Outro analgésico ou outro antibiótico.",
+        management: "Evitar em pacientes de risco." },
+      { pair: ["vancomicina","furosemida"], severity: "moderate", title: "Vancomicina + Furosemida",
+        mechanism: "Farmacodinâmico – nefrotoxicidade aditiva", evidence: "Boa",
+        description: "Ambos são potencialmente nefrotóxicos. Associação aumenta risco de LRA.",
+        clinicalOrtho: "Infecção de sítio cirúrgico ou osteomielite + necessidade de diurético.",
+        monitoring: "Creatinina, TFG, níveis séricos de vancomicina (vale), balanço hídrico.",
+        alternatives: "Ajustar dose de vancomicina pela função renal; hidratação adequada.",
+        management: "Monitorar função renal diariamente. Ajustar doses. Suspender um dos agentes se piora." },
+      { pair: ["vancomicina","ceftazidima"], severity: "moderate", title: "Vancomicina + Ceftazidima",
+        mechanism: "Farmacodinâmico – possível aumento de nefrotoxicidade", evidence: "Razoável",
+        description: "Associações de vancomicina com alguns betalactâmicos associadas a maior risco de LRA em estudos.",
+        clinicalOrtho: "Cobertura empírica ampla em infecções ortopédicas graves.",
+        monitoring: "Função renal, níveis de vancomicina.",
+        alternatives: "Reavaliar necessidade de associação prolongada. Desescalonar conforme cultura.",
+        management: "Monitoramento renal rigoroso e ajuste de dose." },
+      { pair: ["vancomicina","ceftriaxona"], severity: "moderate", title: "Vancomicina + Ceftriaxona",
+        mechanism: "Farmacodinâmico – possível nefrotoxicidade aditiva", evidence: "Razoável",
+        description: "Mesmo padrão de outras associações vancomicina + betalactâmico.",
+        clinicalOrtho: "Infecções graves de sítio cirúrgico.",
+        monitoring: "Creatinina, níveis de vancomicina.",
+        alternatives: "Desescalonar quando possível.", management: "Monitorar função renal." },
+      { pair: ["cetoprofeno","furosemida"], severity: "moderate", title: "Cetoprofeno + Furosemida",
+        mechanism: "Farmacodinâmico – redução do efeito diurético e risco de LRA", evidence: "Boa",
+        description: "AINEs reduzem prostaglandinas renais, atenuando o efeito da furosemida e piorando função renal.",
+        clinicalOrtho: "Pacientes com edema ou IC que também têm dor inflamatória.",
+        monitoring: "Diurese, creatinina, eletrólitos, peso.",
+        alternatives: "Evitar AINE; preferir dipirona/paracetamol.",
+        management: "Monitorar função renal e resposta diurética. Suspender AINE se piora." },
+      { pair: ["ibuprofeno","furosemida"], severity: "moderate", title: "Ibuprofeno + Furosemida",
+        mechanism: "Farmacodinâmico – redução do efeito diurético e risco de LRA", evidence: "Boa",
+        description: "Mesmo mecanismo dos outros AINEs.",
+        clinicalOrtho: "Comum em pacientes idosos com fratura e retenção hídrica.",
+        monitoring: "Diurese, creatinina.", alternatives: "Dipirona, paracetamol.",
+        management: "Evitar AINE se possível." },
+      { pair: ["dexametasona","ciprofloxacino"], severity: "moderate", title: "Dexametasona + Ciprofloxacino",
+        mechanism: "Farmacodinâmico – aumento do risco de tendinopatia e ruptura tendínea",
+        evidence: "Boa", description: "Corticosteroides + quinolonas elevam significativamente o risco de tendinite e ruptura (especialmente Aquiles).",
+        clinicalOrtho: "Pacientes ortopédicos já têm risco elevado de problemas tendíneos. Associação particularmente preocupante.",
+        monitoring: "Dor tendínea, edema, limitação funcional.",
+        alternatives: "Reavaliar necessidade de quinolona ou de corticoide sistêmico prolongado.",
+        management: "Evitar associação prolongada. Orientar o paciente a reportar dor tendínea imediatamente." },
+      { pair: ["dexametasona","levofloxacino"], severity: "moderate", title: "Dexametasona + Levofloxacino",
+        mechanism: "Farmacodinâmico – risco de tendinopatia/ruptura", evidence: "Boa",
+        description: "Mesmo padrão das quinolonas + corticoides.",
+        clinicalOrtho: "Infecções + inflamação em pacientes ortopédicos.",
+        monitoring: "Sintomas tendíneos.", alternatives: "Evitar associação prolongada.",
+        management: "Orientar o paciente e monitorar." },
+      { pair: ["metilprednisolona","ciprofloxacino"], severity: "moderate", title: "Metilprednisolona + Ciprofloxacino",
+        mechanism: "Farmacodinâmico – risco de ruptura tendínea", evidence: "Boa",
+        description: "Corticoides sistêmicos + quinolonas = risco elevado de tendinopatia.",
+        clinicalOrtho: "Uso de corticoide em edema/inflamação + quinolona para infecção.",
+        monitoring: "Dor tendínea.", alternatives: "Reavaliar um dos agentes.",
+        management: "Evitar uso concomitante prolongado." },
+      { pair: ["omeprazol","clopidogrel"], severity: "moderate", title: "Omeprazol + Clopidogrel",
+        mechanism: "Farmacocinético – inibição de CYP2C19 (redução da ativação do clopidogrel)",
+        evidence: "Boa", description: "Omeprazol pode reduzir a eficácia antiagregante do clopidogrel.",
+        clinicalOrtho: "Pacientes cardiopatas submetidos a cirurgia ortopédica.",
+        monitoring: "Eventos trombóticos.", alternatives: "Pantoprazol ou rabeprazol (verificar disponibilidade).",
+        management: "Preferir outro IBP se o paciente estiver em uso de clopidogrel." },
+      { pair: ["insulina_regular","metformina"], severity: "minor", title: "Insulina + Metformina",
+        mechanism: "Farmacodinâmico – risco aumentado de hipoglicemia", evidence: "Boa",
+        description: "Associação comum e geralmente desejada, mas requer monitoramento glicêmico.",
+        clinicalOrtho: "Pacientes diabéticos em pós-operatório ortopédico.",
+        monitoring: "Glicemia capilar frequente.", alternatives: "Ajuste de doses conforme protocolo de insulina.",
+        management: "Monitorar glicemia. Não é contraindicação – é uso racional." }
+    ];
+
+    const ssData = [["Aciclovir", "GANciclovir", "VALGANciclovir"], ["AmiTRIPTILina", "AmiNOFILina"], ["AMOXIcilina", "OXAcilina", "AMPIcilina", "PIPERAcilina + Tazobactam", "AMOXIcilina + Ácido Clavulânico", "AMPIcilina+ Sulbactam"], ["ANFOTERICina B", "POLIMIXina B"], ["AnloDIPINo", "NifeDIPINa", "NimoDIPINo", "NifeDIPINa RETARD"], ["Azul de METILENO", "Azul PATENTE", "Azul de TRYPANO"], ["BASILIXImabe*"], ["Benzilpenicilina BENZATINA", "Benzilpenicilina POTÁSSICA"], ["BENZOILmetronidazol", "Metronidazol"], ["CeFALEXina", "CeFAZOLina"], ["CeFEPima", "CeFUROXima"], ["CETOPRofeno", "IBUPRofeno", "BACLofeno"], ["CIPROfloxacino", "MOXIfloxacino"], ["CUSTODiol", "CALCITRiol"], ["DESloratadina", "Loratadina"], ["DEXAmetasona", "BECLOmetasona"], ["DexTROCETAMina", "DiFENIDRAMina", "DexCLORFENIRAMina", "DexMEDETOMIDina"], ["DIazepam", "LORazepam", "CLONazepam"], ["DOBUTamina", "DOPamina", "PROTamina", "ESCOPOLamina"], ["DOMperidona", "RISperidona"], ["ENOXAparina", "HEparina"], ["ETILefrina", "EPINefrina", "NOREPINefrina", "FENILefrina", "EFEDRina"], ["Fentanila", "SUfentanila", "ALfentanila", "REMIfentanila"], ["FLUconazol", "ITRAconazol", "CETOconazol"], ["GABAPENtina", "FLUOXEtina"], ["GENTAmicina", "NEOmicina", "CLARITROmicina", "CLINDAmicina", "TOBRAmicina", "VANCOmicina"], ["GliBENCLAMida", "GliMEPIRida"], ["HidrALAZINA", "HidroCLOROTiazida"], ["IMIpenem + Cilastina", "MEROpenem"], ["ISOflurano", "SEVOflurano"], ["Isossorbida, DINITRATO  SL", "Isossorbida, DINITRATO", "Isossorbida, MONONITRATO"], ["LEVOBUPIVAcaína", "LIDOcaína", "PROXIMETAcaína"], ["LOPERamida", "FUROSEMida", "METOCLOPRamida"], ["MEPIVAcaína e EPINefrina", "BUPIVAcaína + Glicose", "LEVOBUPIVAcaína ISOBÁRICA", "LEVOBUPIVAcaína + EPINefrina", "TETRAcaína + FENILefrina"], ["LIDOcaína SV", "LIDOcaína + EPINefrina", "LIDOcaína CV"], ["METILprednisOLona", "PrednisOLona", "Prednisona", "HIDROCORTisona"], ["METOPRolol, Tartarato de", "PROPANolol", "ATENolol"], ["NEostigmina", "PIRIDostigmina"], ["NIMESULida", "LINEZOLida"], ["NitroGLICERINA", "NitroPRUSSIATO de sódio"], ["ONDAsetrona", "GRANIsetrona"], ["PANCURônio", "ROCURônio", "SUXAMETônio"], ["Papaína", "PapaVERina"], ["SERTRALina", "QUETIAPina"], ["Solução p/ CAPD 1,5%", "Solução p/ DPA 1,5%"], ["Solução p/ CAPD 2,5%", "Solução p/ DPA 2,5%"], ["Solução p/ CAPD 4,25%", "Solução p/ DPA 4,25%"], ["TIROFIbana", "RIVAROXAbana"]];
+
+    const mppData = [{"title": "Agonistas adrenérgicos endovenosos", "items": ["ETILefrina", "EFEDRina", "EPINefrina", "NOREPINefrina"]}, {"title": "Analgésicos opioides endovenosos, transdérmicos e de uso oral", "items": ["Petidina", "SUfentanila", "Nalbufina", "ALfentanila", "REMIfentanila"]}, {"title": "Anestésicos gerais, inalatórios e endovenosos", "items": ["DexTROCETAMina", "Propofol", "Isoflurano", "Sevoflurano", "BUPIVAcaína + Glicose", "MEPIVAcaína", "epinefrina", "LEVOBUPIVAcaína", "LEVOBUPIVAcaína + epinefrina", "LEVOBUPIVAcaína isobárica", "LIDOcaína", "LIDOcaína + Epinefrina", "Tetracaína + FENILefrina", "PROXIMETAcaína", "DexTROCETAMina", "Tiopental", "Etomidato", "ALfentanila", "REMIfentanila", "Midazolam", "Flumazenil"]}, {"title": "Antagonistas adrenérgicos endovenosos", "items": ["METROPolol", "Tartarato de"]}, {"title": "Antiarrítmicos endovenosos", "items": ["Amiodarona", "Adenosina"]}, {"title": "Anticoagulantes", "items": ["ENOXAparina", "Heparina", "RIVAROXAbana", "Varfarina"]}, {"title": "Trombolíticos", "items": ["Alteplase", "PROTamina."]}, {"title": "Inibidores da glicoproteína", "items": ["TIROFIbana"]}, {"title": "Bloqueadores neuromusculares", "items": ["PANCURônio", "ROCURônio", "SUXAMETônio"]}, {"title": "Contrastes Radiológicos Endovenosos", "items": ["Gadodiamida", "Gadoteridol Iohexol"]}, {"title": "Hipoglicemiantes orais", "items": ["GliBENCLAMida", "GliMEPIRida", "Metformina"]}, {"title": "Inotrópicos Endovenosos", "items": ["Milrinona"]}, {"title": "Insulinas Subcutâneas e Endovenosas", "items": ["Insulina Humana Recombinante – NPH", "Insulina Regular Humana"]}, {"title": "Sedativos endovenosos de ação moderada", "items": ["Midazolam", "DexMEDETOMIDina"]}, {"title": "Soluções Cardioplégicas", "items": ["Bicarbonato de Sódio + Cloreto de potássio+Glicose"]}, {"title": "Medicamentos que possui mais de uma dosagem de mesma apresentação", "items": ["Amicacina 250mg/ml", "Fentanil 500mcg/10ml", "Metadona10mg", "Morfina 0", "1mg/ml/0", "2mg/ml", "10mg/ml", "Tramal 100mg", "HIDROCORTisona 500mg", "Isossorbida", "DINITRATO  SL", "Isossorbida", "DINITRATO", "Isossorbida", "MONONITRATO", "Isossorbida", "MONONITRATO", "Carvedilol 6", "25mg", "Atropina 0", "5mg", "Prednisona 20mg", "METILprednisOLona 500mg", "Levotiroxina 75mcg", "Tacrolimo 5mg", "Micofenolato sódico 360mg", "Papaína pomada 50%", "Alfa Poractante 240mg/3ml."]}, {"title": "Outros medicamentos", "items": ["Betametasona", "acetato + Betametasona", "fosfato dissódico", "Anfotericina B", "Solução para diálise peritoneal", "hemodiálise", "solução de nutrição parenteral", "Cloreto de Potássio19", "1% (2", "56mEq/mL)
+(10mL)", "Cloreto de Sódio 10% 10ml", "Cloreto de Sódio 20% 10ml", "Glicose 50% 10ml", "NitroPRUSSIATO de sódio", "Ocitocina", "Prometazina Sulfato de magnésio", "Desmopressina", "DOBUTamina", "DOPamina", "Bolsa de Nutrição Parenteral."]}];
+
+    let selected = new Set();
+    let currentClassFilter = "all";
+
+    function showTab(tab) {
+      ["checker","mav","about"].forEach(t => {
+        document.getElementById("panel-" + t).classList.add("hidden");
+        document.getElementById("tab-" + t).classList.remove("tab-active");
+        document.getElementById("tab-" + t).classList.add("text-slate-600");
+      });
+      document.getElementById("panel-" + tab).classList.remove("hidden");
+      document.getElementById("tab-" + tab).classList.add("tab-active");
+      document.getElementById("tab-" + tab).classList.remove("text-slate-600");
+    }
+
+    function renderDrugList(filter = "") {
+      const container = document.getElementById("drugList");
+      let filtered = drugs.filter(d => {
+        const matchText = d.name.toLowerCase().includes(filter.toLowerCase()) || d.class.toLowerCase().includes(filter.toLowerCase());
+        const matchClass = currentClassFilter === "all" || d.class.toLowerCase().includes(currentClassFilter.toLowerCase());
+        return matchText && matchClass;
+      });
+      container.innerHTML = filtered.map(d => `
+        <button onclick="toggleDrug('${d.id}')" id="chip-${d.id}"
+                class="drug-chip text-left text-xs p-2.5 rounded-lg border bg-white hover:bg-blue-50 ${selected.has(d.id) ? 'selected' : 'border-slate-200'}">
+          <div class="font-medium leading-tight flex items-center gap-1 flex-wrap">
+            ${d.name}
+            ${d.mav ? '<span class="mav-badge">MAV</span>' : ''}${d.br ? '' : ''}
+          </div>
+          <div class="text-slate-500 mt-0.5">${d.class}</div>
+        </button>
+      `).join("");
+    }
+
+    function filterByClass(cls) {
+      currentClassFilter = cls;
+      renderDrugList(document.getElementById("filterInput").value);
+    }
+
+    function toggleDrug(id) {
+      if (selected.has(id)) selected.delete(id);
+      else selected.add(id);
+      updateSelectedDisplay();
+      renderDrugList(document.getElementById("filterInput").value);
+    }
+
+    function updateSelectedDisplay() {
+      document.getElementById("selectedCount").textContent = selected.size;
+      const names = [...selected].map(id => drugs.find(d => d.id === id)?.name || id);
+      document.getElementById("selectedNames").textContent = names.length ? "→ " + names.join(" • ") : "";
+    }
+
+    function clearSelection() {
+      selected.clear();
+      updateSelectedDisplay();
+      renderDrugList(document.getElementById("filterInput").value);
+      document.getElementById("resultSection").classList.add("hidden");
+    }
+
+    function filterDrugs() {
+      renderDrugList(document.getElementById("filterInput").value);
+    }
+
+    function getSeverityClass(sev) {
+      if (sev === "contraindicated") return "severity-contraindicated";
+      if (sev === "major") return "severity-major";
+      if (sev === "moderate") return "severity-moderate";
+      return "severity-minor";
+    }
+
+    function getSeverityLabel(sev) {
+      const map = { contraindicated: "CONTRAINDICADO", major: "MAIOR / GRAVE", moderate: "MODERADA", minor: "MENOR / LEVE" };
+      return map[sev] || sev.toUpperCase();
+    }
+
+    function checkInteractions() {
+      if (selected.size < 2) {
+        alert("Selecione pelo menos 2 medicamentos para verificar interações.");
+        return;
+      }
+      const selectedArr = [...selected].sort();
+      const found = [];
+      for (let i = 0; i < selectedArr.length; i++) {
+        for (let j = i + 1; j < selectedArr.length; j++) {
+          const pairKey = [selectedArr[i], selectedArr[j]].sort().join("|");
+          const match = interactionsDB.find(inter => inter.pair.slice().sort().join("|") === pairKey);
+          if (match) found.push(match);
+        }
+      }
+
+      const container = document.getElementById("resultsContainer");
+      const section = document.getElementById("resultSection");
+      section.classList.remove("hidden");
+
+      document.getElementById("printDate").textContent = new Date().toLocaleString("pt-BR");
+      document.getElementById("printDrugs").textContent = [...selected].map(id => drugs.find(d => d.id === id)?.name).join(", ");
+
+      if (found.length === 0) {
+        container.innerHTML = `
+          <div class="bg-green-50 border border-green-200 rounded-xl p-5 text-green-900">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-check-circle text-2xl text-green-600 mt-0.5"></i>
+              <div>
+                <h3 class="font-semibold text-lg">Nenhuma interação cadastrada neste protótipo entre os medicamentos selecionados</h3>
+                <p class="mt-2 text-sm">Isso <strong>não significa</strong> ausência de interações. A base atual prioriza as interações mais relevantes para Traumato-Ortopedia.</p>
+                <p class="mt-2 text-sm">Sempre consulte Micromedex®, Drugs.com, Lexicomp ou o farmacêutico clínico do HRBA, especialmente em idosos, polifarmácia, DRC/hepatopatia ou pós-operatório.</p>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const order = { contraindicated: 0, major: 1, moderate: 2, minor: 3 };
+      found.sort((a, b) => order[a.severity] - order[b.severity]);
+
+      container.innerHTML = `
+        <div class="bg-slate-50 rounded-lg p-3 text-sm mb-4 no-print">
+          <strong>${found.length}</strong> interação(ões) encontrada(s) entre os medicamentos selecionados.
+          Ordenadas por gravidade (mais graves primeiro).
+        </div>
+      ` + found.map(inter => `
+        <div class="${getSeverityClass(inter.severity)} rounded-xl p-5 shadow-sm mb-4">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+            <h3 class="font-bold text-lg">${inter.title}</h3>
+            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
+              ${inter.severity === 'contraindicated' ? 'bg-red-800 text-white' : 
+                inter.severity === 'major' ? 'bg-red-600 text-white' : 
+                inter.severity === 'moderate' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'}">
+              ${getSeverityLabel(inter.severity)}
+            </span>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p><strong>Mecanismo:</strong> ${inter.mechanism}</p>
+              <p class="mt-1"><strong>Grau de evidência:</strong> ${inter.evidence}</p>
+              <p class="mt-2">${inter.description}</p>
+            </div>
+            <div class="bg-white/70 rounded-lg p-3">
+              <p class="font-semibold text-[#0d4f8b]"><i class="fas fa-bone mr-1"></i> Contexto Traumato-Ortopedia</p>
+              <p class="mt-1">${inter.clinicalOrtho}</p>
+            </div>
+          </div>
+          <div class="mt-4 grid md:grid-cols-3 gap-3 text-sm">
+            <div class="bg-white/80 rounded-lg p-3">
+              <p class="font-semibold text-slate-700"><i class="fas fa-stethoscope mr-1"></i> Monitoramento</p>
+              <p class="mt-1">${inter.monitoring}</p>
+            </div>
+            <div class="bg-white/80 rounded-lg p-3">
+              <p class="font-semibold text-slate-700"><i class="fas fa-exchange-alt mr-1"></i> Alternativas (HRBA)</p>
+              <p class="mt-1">${inter.alternatives}</p>
+            </div>
+            <div class="bg-white/80 rounded-lg p-3">
+              <p class="font-semibold text-slate-700"><i class="fas fa-hand-holding-medical mr-1"></i> Manejo / Reversão</p>
+              <p class="mt-1">${inter.management}</p>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderMAVs() {
+      document.getElementById("ssTable").innerHTML = ssData.map(row => `
+        <tr class="hover:bg-red-50/50">
+          <td class="border p-2 font-medium">${row.med}</td>
+          <td class="border p-2 text-slate-700">${row.conf}</td>
+        </tr>
+      `).join("");
+
+      document.getElementById("mppList").innerHTML = mppData.map(item => `
+        <div class="border border-red-200 rounded-lg p-3 bg-red-50/40">
+          <div class="font-semibold text-red-800 text-sm">${item.classe}</div>
+          <div class="text-slate-700 mt-1 text-sm">${item.meds}</div>
+        </div>
+      `).join("");
+    }
+
+    renderDrugList();
+    renderMAVs();
+  </script>
+</body>
+</html>
