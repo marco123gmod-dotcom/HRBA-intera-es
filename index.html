@@ -3,11 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="refresh" content="0; url=index%20(3).html" />
-  <title>HRBA Interações Medicamentosas</title>
-  <script>window.location.replace("index%20(3).html");</script>
+  <meta name="theme-color" content="#123f66" />
+  <meta name="description" content="Portal de apoio à checagem de interações medicamentosas e consulta de medicamentos de alta vigilância do HRBA." />
+  <title>HRBA | Apoio à Segurança Medicamentosa</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #123f66;
+      --blue: #17649a;
+      --blue-light: #eaf3f9;
+      --ink: #203244;
+      --muted: #607387;
+      --line: #dce5ec;
+      --surface: #ffffff;
+      --page: #f3f6f8;
+      --amber: #fff7e6;
+      --amber-line: #f2d79c;
+      --shadow: 0 12px 32px rgb(23 53 77 / 8%);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; line-height: 1.55; }
+    a { color: inherit; }
+    .masthead { color: #fff; background: linear-gradient(115deg, #123f66, #17649a); }
+    .masthead-inner, main, footer { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    .masthead-inner { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid rgb(255 255 255 / 35%); border-radius: 12px; background: rgb(255 255 255 / 12%); font-size: 23px; }
+    .brand h1 { margin: 0; font-size: 19px; line-height: 1.25; letter-spacing: .01em; }
+    .brand p { margin: 4px 0 0; color: rgb(255 255 255 / 82%); font-size: 12px; }
+    .masthead-note { text-align: right; color: rgb(255 255 255 / 85%); font-size: 12px; }
+    .masthead-note strong { display: block; color: #fff; font-size: 13px; }
+    main { padding: 34px 0 42px; }
+    .eyebrow { margin: 0 0 9px; color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: center; gap: 36px; padding: 34px 38px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); }
+    .hero h2 { max-width: 700px; margin: 0; color: var(--navy); font-size: clamp(27px, 4vw, 39px); line-height: 1.16; letter-spacing: -.025em; }
+    .hero-copy { max-width: 700px; margin: 15px 0 0; color: var(--muted); font-size: 15px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 23px; }
+    .button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 9px; padding: 10px 16px; border: 1px solid transparent; border-radius: 9px; text-decoration: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s ease, transform .15s ease, box-shadow .15s ease; }
+    .button:hover { transform: translateY(-1px); }
+    .button-primary { background: var(--navy); color: #fff; box-shadow: 0 4px 12px rgb(18 63 102 / 18%); }
+    .button-primary:hover { background: #0c3455; }
+    .button-secondary { border-color: var(--line); background: #fff; color: var(--navy); }
+    .button-secondary:hover { background: #f6f9fb; }
+    .button-icon { font-size: 16px; }
+    .qr-card { display: flex; min-height: 245px; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: #f8fafc; text-align: center; }
+    .qr-card h3 { margin: 0; color: var(--navy); font-size: 14px; }
+    .qr-card p { margin: 5px 0 12px; color: var(--muted); font-size: 11px; }
+    #qrcode { display: grid; min-width: 132px; min-height: 132px; place-items: center; padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    #qrcode img, #qrcode canvas { display: block; max-width: 100%; }
+    #qrFallback { max-width: 190px; color: var(--muted); font-size: 11px; }
+    .qr-caption { max-width: 230px; margin: 10px 0 0 !important; overflow-wrap: anywhere; font-size: 10px !important; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 34px 0 14px; }
+    .section-heading h2 { margin: 0; color: var(--navy); font-size: 19px; }
+    .section-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .card { min-height: 176px; padding: 21px; border: 1px solid var(--line); border-radius: 13px; background: #fff; box-shadow: 0 4px 14px rgb(23 53 77 / 4%); }
+    .card-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 10px; background: var(--blue-light); color: var(--blue); font-size: 18px; }
+    .card h3 { margin: 13px 0 5px; color: var(--navy); font-size: 14px; }
+    .card p { margin: 0; color: var(--muted); font-size: 12px; }
+    .notice { display: flex; align-items: flex-start; gap: 12px; margin-top: 19px; padding: 15px 17px; border: 1px solid var(--amber-line); border-radius: 11px; background: var(--amber); color: #644b18; font-size: 12px; }
+    .notice-icon { flex: 0 0 auto; font-size: 17px; }
+    .notice strong { color: #513b10; }
+    .notice p { margin: 0; }
+    .site-footer { padding: 18px 0 26px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+    .site-footer p { margin: 0; }
+    .print-only { display: none; }
+    @media (max-width: 760px) {
+      .masthead-inner, main, footer { width: min(100% - 28px, 600px); }
+      .masthead-note { display: none; }
+      main { padding-top: 19px; }
+      .hero { grid-template-columns: 1fr; gap: 22px; padding: 23px; }
+      .qr-card { min-height: auto; }
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: #fff; color: #172635; font-size: 10pt; }
+      .masthead { background: #fff; color: var(--navy); border-bottom: 2px solid var(--navy); }
+      .masthead-inner, main, footer { width: 100%; }
+      .masthead-inner { min-height: auto; padding: 0 0 12px; }
+      .brand-mark { border-color: var(--line); background: #fff; }
+      .brand p, .masthead-note { color: var(--muted); }
+      .masthead-note strong { color: var(--navy); }
+      main { padding: 18px 0; }
+      .hero, .card, .qr-card { box-shadow: none; break-inside: avoid; }
+      .hero { grid-template-columns: 1fr 240px; padding: 18px; }
+      .hero h2 { font-size: 24pt; }
+      .actions { display: none; }
+      .cards { gap: 9px; }
+      .card { min-height: 0; padding: 14px; }
+      .notice { break-inside: avoid; }
+      .print-only { display: block; }
+      .screen-only { display: none !important; }
+      .site-footer { padding: 12px 0 0; }
+    }
+  </style>
 </head>
 <body>
-  <p>Abrindo a versão atualizada do site. Se o redirecionamento não funcionar, <a href="index%20(3).html">clique aqui</a>.</p>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand" aria-label="Hospital Regional do Baixo Amazonas">
+        <div class="brand-mark" aria-hidden="true">✚</div>
+        <div>
+          <h1>HRBA <span style="font-weight:400">| Segurança Medicamentosa</span></h1>
+          <p>Hospital Regional do Baixo Amazonas • Santarém – PA</p>
+        </div>
+      </div>
+      <div class="masthead-note"><strong>Portal de apoio multiprofissional</strong>Traumatologia e Ortopedia</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Apoio à prática assistencial</p>
+        <h2 id="page-title">Informação segura para apoiar a terapia medicamentosa</h2>
+        <p class="hero-copy">Consulte interações potenciais entre medicamentos padronizados e acesse informações sobre Medicamentos de Alta Vigilância (MAVs) do HRBA.</p>
+        <div class="actions screen-only">
+          <a class="button button-primary" href="index%20(3).html"><span class="button-icon" aria-hidden="true">⌕</span> Abrir checagem de interações</a>
+          <button class="button button-secondary" type="button" onclick="window.print()"><span class="button-icon" aria-hidden="true">⎙</span> Imprimir esta página</button>
+        </div>
+        <p class="print-only" style="margin:14px 0 0;color:#607387;font-size:10pt">Acesse a checagem de interações e os MAVs pelo QR Code ou pelo endereço do site desta página.</p>
+      </div>
+      <aside class="qr-card" aria-label="QR Code para abrir a checagem de interações">
+        <h3>Acesso rápido à ferramenta</h3>
+        <p>Aponte a câmera do celular para o código</p>
+        <div id="qrcode"><span id="qrFallback">Gerando QR Code…</span></div>
+        <p class="qr-caption" id="qrCaption">O QR Code aponta para a página de checagem deste site.</p>
+      </aside>
+    </section>
+
+    <section aria-labelledby="resources-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="resources-title">Acesso aos recursos</h2>
+          <p>Conteúdo voltado à equipe multiprofissional do serviço.</p>
+        </div>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">⌕</div>
+          <h3>Checagem de interações</h3>
+          <p>Selecione dois ou mais medicamentos, filtre por nome ou classe e consulte as interações cadastradas, sua gravidade e orientações de monitoramento.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">!</div>
+          <h3>Medicamentos de Alta Vigilância</h3>
+          <p>Consulte as listas de sonoridade semelhante e de medicamentos potencialmente perigosos (MPPs) presentes na ferramenta.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">▤</div>
+          <h3>Relatório para impressão</h3>
+          <p>Na checagem, gere uma versão para impressão ou salve o relatório em PDF pelo navegador.</p>
+        </article>
+      </div>
+    </section>
+
+    <aside class="notice" role="note">
+      <span class="notice-icon" aria-hidden="true">⚠</span>
+      <p><strong>Importante:</strong> protótipo de suporte clínico. Não substitui julgamento clínico, consulta a bases atualizadas nem avaliação do farmacêutico clínico. Verifique as informações considerando as condições individuais do paciente e os protocolos institucionais. A ausência de interação cadastrada não significa ausência de risco.</p>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Protótipo • Padronização de Medicamentos HRBA • Traumatologia e Ortopedia</p>
+      <p>Hospital Regional do Baixo Amazonas • Santarém – PA</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    (function () {
+      const target = new URL("index%20(3).html", window.location.href).href;
+      const qrContainer = document.getElementById("qrcode");
+      const fallback = document.getElementById("qrFallback");
+
+      if (window.QRCode) {
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, {
+          text: target,
+          width: 132,
+          height: 132,
+          colorDark: "#123f66",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else if (fallback) {
+        fallback.textContent = "Não foi possível carregar o QR Code. Use o botão ‘Abrir checagem’ ou acesse pelo navegador.";
+      }
+    })();
+  </script>
 </body>
 </html>
